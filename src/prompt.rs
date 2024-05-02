@@ -18,7 +18,7 @@ pub fn compose_prompt(
     let identity_level = identity_level.to_tag();
 
     format!(
-        r"\
+        "\
 {Bos}\
 {CopyrightStart}{copyright}{CopyrightEnd}\
 {CharacterStart}{character}{CharacterEnd}\

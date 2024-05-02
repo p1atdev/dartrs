@@ -1,5 +1,5 @@
 use anyhow::{Error as E, Result};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use rand::random;
 
 use candle_core::{DType, Device};
@@ -7,23 +7,36 @@ use candle_core::{DType, Device};
 use hf_hub::{api::sync::Api, Repo, RepoType};
 use tokenizers::Tokenizer;
 
-mod configs;
-mod generate;
-mod models;
-mod prompt;
-mod tags;
+use dartrs::generate::TextGeneration;
+use dartrs::models::*;
+use dartrs::prompt::compose_prompt;
+use dartrs::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag};
 
-use configs::{DartV2Mistral, DartV2Mixtral};
-use generate::TextGeneration;
-use models::{MistralModelBuilder, MixtralModelBuilder, ModelBuilder};
-use prompt::compose_prompt;
-use tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag};
+#[derive(Debug, Clone, ValueEnum)]
+enum ModelType {
+    #[clap(name = "v2-llama-100m")]
+    V2Llama100m,
+    #[clap(name = "v2-mistral-100m")]
+    V2Mistral100m,
+    #[clap(name = "v2-mixtral-160m")]
+    V2Mixtral160m,
+}
+
+impl ModelType {
+    fn hub_name(&self) -> String {
+        match self {
+            ModelType::V2Llama100m => ModelRepositoy::V2Llama100m.hub_name(),
+            ModelType::V2Mistral100m => ModelRepositoy::V2Mistral100m.hub_name(),
+            ModelType::V2Mixtral160m => ModelRepositoy::V2Mixtral160m.hub_name(),
+        }
+    }
+}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[clap(long, short, default_value = "p1atdev/dart-v2-mistral-100m")]
-    model_id: String,
+    #[clap(long, short, default_value = "v2-mistral-100m")]
+    model_type: ModelType,
 
     #[clap(long, default_value = "main")]
     revision: String,
@@ -69,12 +82,16 @@ fn main() -> Result<()> {
         candle_core::utils::with_f16c()
     );
 
-    let model_id = args.model_id.to_string();
+    let model_type = args.model_type;
     let revision = args.revision.to_string();
 
     let start = std::time::Instant::now();
     let api = Api::new()?;
-    let repo = api.repo(Repo::with_revision(model_id, RepoType::Model, revision));
+    let repo = api.repo(Repo::with_revision(
+        model_type.hub_name(),
+        RepoType::Model,
+        revision,
+    ));
 
     // get model config.json
     println!("loading the config...");
@@ -97,7 +114,7 @@ fn main() -> Result<()> {
     };
 
     // load model
-    let model = MistralModelBuilder::dart_v2_100m(&api, dtype, &device).build()?;
+    let model = MistralModelFamily::V2_100m.load(&api, dtype, &device)?;
     println!("loaded the model in {:?}", start.elapsed());
 
     // arguments

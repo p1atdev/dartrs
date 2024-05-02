@@ -1,8 +1,30 @@
 use std::panic;
 
 use candle_nn::Activation;
-use candle_transformers::models::{mistral, mixtral};
+use candle_transformers::models::{llama, mistral, mixtral};
 use serde_json::from_str;
+
+pub trait DartV2Llama {
+    fn dart_v2_100m() -> Self;
+}
+
+impl DartV2Llama for llama::Config {
+    fn dart_v2_100m() -> Self {
+        Self {
+            vocab_size: 30649,
+            intermediate_size: 3072,
+            hidden_size: 768,
+            num_attention_heads: 8,
+            num_key_value_heads: 1,
+            num_hidden_layers: 8,
+            use_flash_attn: false,
+            rms_norm_eps: 1e-05,
+            rope_theta: 1000.0,
+            bos_token_id: None,
+            eos_token_id: None,
+        }
+    }
+}
 
 pub trait DartV2Mistral {
     fn dart_v2_100m() -> Self;
@@ -65,6 +87,16 @@ impl DartV2Mixtral for mixtral::Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_llama_100m() {
+        llama::Config::dart_v2_100m();
+    }
+
+    #[test]
+    fn test_mistral_100m() {
+        mistral::Config::dart_v2_100m();
+    }
 
     #[test]
     fn test_mixtral_160m() {
