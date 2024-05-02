@@ -133,8 +133,16 @@ fn main() -> Result<()> {
     let seed = args.seed.unwrap_or_else(|| random());
 
     // generate text
-    let mut text_generation =
-        TextGeneration::new(model, tokenizer, seed, temperature, top_p, top_k, &device);
+    let mut text_generation = TextGeneration::new(
+        model,
+        tokenizer,
+        seed,
+        temperature,
+        top_p,
+        top_k,
+        &device,
+        None,
+    );
     text_generation.run(&prompt, args.max_new_tokens)?;
 
     Ok(())

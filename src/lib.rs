@@ -1,3 +1,4 @@
+pub mod bindings;
 pub mod configs;
 pub mod generate;
 pub mod models;
@@ -5,17 +6,13 @@ pub mod polyfill;
 pub mod prompt;
 pub mod tags;
 
-use pyo3::prelude::*;
+use generate::CausalLM;
+use models::*;
 
-/// Formats the sum of two numbers as string.
-#[pyfunction]
-fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-    Ok((a + b).to_string())
+pub enum ModelWraapper {
+    Mistral(MistralModelFamily),
+    Mixtral(MixtralModelFamily),
+    // Llama(LlamaModelFamily),
 }
 
-/// A Python module implemented in Rust.
-#[pymodule]
-fn dartrs(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
-    Ok(())
-}
+impl ModelWraapper {}
