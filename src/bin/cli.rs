@@ -5,41 +5,33 @@ use rand::random;
 use candle_core::{DType, Device};
 
 use hf_hub::{api::sync::Api, Repo, RepoType};
-use tokenizers::Tokenizer;
 
-use dartrs::generate::TextGeneration;
+use dartrs::generation::{GenerationConfig, TextGeneration};
 use dartrs::models::*;
 use dartrs::prompt::compose_prompt;
 use dartrs::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag};
 
 #[derive(Debug, Clone, ValueEnum)]
 enum ModelType {
-    #[clap(name = "v2-llama-100m")]
-    V2Llama100m,
-    #[clap(name = "v2-mistral-100m")]
-    V2Mistral100m,
-    #[clap(name = "v2-mixtral-160m")]
-    V2Mixtral160m,
-}
-
-impl ModelType {
-    fn hub_name(&self) -> String {
-        match self {
-            ModelType::V2Llama100m => ModelRepositoy::V2Llama100m.hub_name(),
-            ModelType::V2Mistral100m => ModelRepositoy::V2Mistral100m.hub_name(),
-            ModelType::V2Mixtral160m => ModelRepositoy::V2Mixtral160m.hub_name(),
-        }
-    }
+    // #[clap(name = "llama")]
+    // Llama,
+    #[clap(name = "mistral")]
+    Mistral,
+    #[clap(name = "mixtral")]
+    Mixtral,
 }
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[clap(long, short, default_value = "v2-mistral-100m")]
+    #[clap(long, short, default_value = "mixtral")]
     model_type: ModelType,
 
+    #[clap(long, default_value = "p1atdev/dart-v2-mixtral-160m-sft-2")]
+    model_name: String,
+
     #[clap(long, default_value = "main")]
-    revision: String,
+    revision: Option<String>,
 
     #[clap(long, default_value = "")]
     copyright: String,
@@ -56,7 +48,7 @@ struct Args {
     #[clap(long, value_enum, default_value = "sfw")]
     rating: RatingTag,
 
-    #[clap(long, value_enum, default_value = "none")]
+    #[clap(long, value_enum, default_value = "lax")]
     identity_level: IdentityTag,
 
     #[clap(long, short, default_value = "")]
@@ -72,6 +64,12 @@ struct Args {
     use_cuda: bool,
 }
 
+macro_rules! run {
+    ($model:ident, $generation_config:ident) => {
+        $model.run(&mut $generation_config)?; // generate text
+    };
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
     println!(
@@ -83,25 +81,11 @@ fn main() -> Result<()> {
     );
 
     let model_type = args.model_type;
-    let revision = args.revision.to_string();
+    let model_name = args.model_name;
+    let revision = args.revision;
+    let max_new_tokens = args.max_new_tokens;
 
-    let start = std::time::Instant::now();
     let api = Api::new()?;
-    let repo = api.repo(Repo::with_revision(
-        model_type.hub_name(),
-        RepoType::Model,
-        revision,
-    ));
-
-    // get model config.json
-    println!("loading the config...");
-
-    // get tokenizer.json
-    let tokenizer_json = repo.get("tokenizer.json")?;
-    println!("retrieved the files in {:?}", start.elapsed());
-    let tokenizer = Tokenizer::from_file(tokenizer_json).map_err(E::msg)?;
-
-    let start = std::time::Instant::now();
 
     let device = match args.use_cuda {
         true => Device::cuda_if_available(0),
@@ -113,11 +97,18 @@ fn main() -> Result<()> {
         DType::F32
     };
 
-    // load model
-    let model = MistralModelFamily::V2_100m.load(&api, dtype, &device)?;
-    println!("loaded the model in {:?}", start.elapsed());
+    let start = std::time::Instant::now();
 
-    // arguments
+    let repo = ModelRepositoy::new(model_name.clone(), api.clone(), revision);
+
+    let tokenizer = repo.load_tokenizer()?;
+
+    let temperature = Some(1.0);
+    let top_p = Some(0.9);
+    let top_k = Some(100);
+    let seed = args.seed.unwrap_or_else(|| random());
+
+    // generate text
     let prompt = compose_prompt(
         &args.copyright,
         &args.character,
@@ -127,23 +118,32 @@ fn main() -> Result<()> {
         args.identity_level,
         &args.prompt,
     );
-    let temperature = Some(1.0);
-    let top_p = Some(0.9);
-    let top_k = Some(100);
-    let seed = args.seed.unwrap_or_else(|| random());
-
-    // generate text
-    let mut text_generation = TextGeneration::new(
-        model,
+    let mut generation_config = GenerationConfig::new(
+        device.clone(),
         tokenizer,
-        seed,
+        prompt,
+        None,
+        Some(max_new_tokens),
         temperature,
         top_p,
         top_k,
-        &device,
-        None,
+        Some(seed),
     );
-    text_generation.run(&prompt, args.max_new_tokens)?;
+
+    match model_type {
+        ModelType::Mistral => {
+            let mut model = MistralModelBuilder::load(model_name.clone(), &api, dtype, &device)?;
+            println!("loaded the model in {:?}", start.elapsed());
+
+            run!(model, generation_config);
+        }
+        ModelType::Mixtral => {
+            let mut model = MixtralModelBuilder::load(model_name.clone(), &api, dtype, &device)?;
+            println!("loaded the model in {:?}", start.elapsed());
+
+            run!(model, generation_config);
+        }
+    }
 
     Ok(())
 }

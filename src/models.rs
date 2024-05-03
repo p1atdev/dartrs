@@ -1,36 +1,48 @@
-use anyhow::Result;
+use anyhow::{Error as E, Result};
 
 use crate::configs::*;
 use crate::polyfill::*;
+use candle_core::{DType, Device};
+use candle_nn::VarBuilder;
 use candle_transformers::models::{llama, mistral, mixtral};
 use hf_hub::api::sync::{Api, ApiRepo};
 use hf_hub::{Repo, RepoType};
-
-use candle_core::{DType, Device};
-use candle_nn::VarBuilder;
+use tokenizers::Tokenizer;
 
 pub trait ModelBuilder<T> {
     fn build(&self) -> Result<T>;
     fn new(model_name: String, api: &Api, dtype: DType, device: &Device) -> Self;
+    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<T>;
 }
 
-pub trait ModelFamily<T> {
-    fn load(&self, api: &Api, dtype: DType, device: &Device) -> Result<T>;
-}
-
-pub enum ModelRepositoy {
-    V2Llama100m,
-    V2Mistral100m,
-    V2Mixtral160m,
+pub struct ModelRepositoy {
+    hub_name: String,
+    api: Api,
+    revision: String,
 }
 
 impl ModelRepositoy {
-    pub fn hub_name(&self) -> String {
-        match self {
-            ModelRepositoy::V2Llama100m => "p1atdev/dart-v2-llama-100m-sft".to_string(),
-            ModelRepositoy::V2Mistral100m => "p1atdev/dart-v2-mistral-100m-sft".to_string(),
-            ModelRepositoy::V2Mixtral160m => "p1atdev/dart-v2-mixtral-160m-sft".to_string(),
+    pub fn new(hub_name: String, api: Api, revision: Option<String>) -> Self {
+        Self {
+            hub_name,
+            api,
+            revision: revision.unwrap_or("main".to_string()),
         }
+    }
+
+    pub fn hub_name(&self) -> String {
+        self.hub_name.clone()
+    }
+
+    pub fn load_tokenizer(&self) -> Result<Tokenizer> {
+        let repo = &self.api.repo(Repo::with_revision(
+            self.hub_name().clone(),
+            RepoType::Model,
+            self.revision.clone(),
+        ));
+        let tokenizer_json = repo.get("tokenizer.json")?;
+        let tokenizer = Tokenizer::from_file(tokenizer_json).map_err(E::msg)?;
+        Ok(tokenizer)
     }
 }
 
@@ -66,18 +78,9 @@ impl ModelBuilder<mistral::Model> for MistralModelBuilder<mistral::Config> {
             config,
         }
     }
-}
 
-pub enum MistralModelFamily {
-    V2_100m,
-}
-
-impl ModelFamily<mistral::Model> for MistralModelFamily {
-    fn load(&self, api: &Api, dtype: DType, device: &Device) -> Result<mistral::Model> {
-        let model_name = match self {
-            MistralModelFamily::V2_100m => ModelRepositoy::V2Mistral100m.hub_name().to_string(),
-        };
-        let builder = MistralModelBuilder::new(model_name, api, dtype, device);
+    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<mistral::Model> {
+        let builder = MistralModelBuilder::new(hub_name, api, dtype, device);
         builder.build()
     }
 }
@@ -114,18 +117,9 @@ impl ModelBuilder<mixtral::Model> for MixtralModelBuilder<mixtral::Config> {
             config,
         }
     }
-}
 
-pub enum MixtralModelFamily {
-    V2_160m,
-}
-
-impl ModelFamily<mixtral::Model> for MixtralModelFamily {
-    fn load(&self, api: &Api, dtype: DType, device: &Device) -> Result<mixtral::Model> {
-        let model_name = match self {
-            MixtralModelFamily::V2_160m => ModelRepositoy::V2Mixtral160m.hub_name().to_string(),
-        };
-        let builder = MixtralModelBuilder::new(model_name, api, dtype, device);
+    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<mixtral::Model> {
+        let builder = MixtralModelBuilder::new(hub_name, api, dtype, device);
         builder.build()
     }
 }
@@ -162,18 +156,9 @@ impl ModelBuilder<llama::Llama> for LlamaModelBuilder<llama::Config> {
             config,
         }
     }
-}
 
-pub enum LlamaModelFamily {
-    V2_100m,
-}
-
-impl ModelFamily<llama::Llama> for LlamaModelFamily {
-    fn load(&self, api: &Api, dtype: DType, device: &Device) -> Result<llama::Llama> {
-        let model_name = match self {
-            LlamaModelFamily::V2_100m => ModelRepositoy::V2Llama100m.hub_name().to_string(),
-        };
-        let builder = LlamaModelBuilder::new(model_name, api, dtype, device);
+    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<llama::Llama> {
+        let builder = LlamaModelBuilder::new(hub_name, api, dtype, device);
         builder.build()
     }
 }

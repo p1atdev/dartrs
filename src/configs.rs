@@ -72,7 +72,7 @@ impl DartV2Mixtral for mixtral::Config {
             "num_local_experts": 4,
             "rms_norm_eps": 1e-05,
             "rope_theta": 1000.0,
-            "sliding_window": 0,
+            "sliding_window": 99999999,
             "use_flash_attn": false
         }
         "#,
