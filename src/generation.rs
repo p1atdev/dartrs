@@ -1,14 +1,11 @@
 use anyhow::{Error as E, Result};
 
-use candle_transformers::{
-    generation::Sampling,
-    models::{llama, mistral, mixtral},
-};
-
 use candle_core::{DType, Device, Tensor};
-
 use candle_transformers::generation::LogitsProcessor;
+use candle_transformers::generation::Sampling;
 use tokenizers::Tokenizer;
+
+use crate::models::{mistral, mixtral};
 
 pub struct GenerationCache {
     input_tokens: Vec<u32>,
@@ -115,29 +112,7 @@ pub trait TextGeneration {
 
     fn decode(&self, config: &mut GenerationConfig, tokens: &[u32]) -> Result<String>;
 
-    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String> {
-        let tokens = config
-            .tokenizer
-            .encode(config.prompt.clone(), false)
-            .map_err(E::msg)?
-            .get_ids()
-            .to_vec();
-
-        // sampling
-        let mut cache = GenerationCache::new(Some(tokens));
-        for _ in 0..config.max_new_tokens {
-            self.get_next_token(config, &mut cache)?;
-
-            if cache.finished {
-                break;
-            }
-        }
-
-        // decode the tokens
-        let decoded = self.decode(config, &cache.output_tokens)?;
-
-        Ok(decoded)
-    }
+    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String>;
 
     fn run(&mut self, config: &mut GenerationConfig) -> Result<()> {
         use std::io::Write;
@@ -239,6 +214,33 @@ impl TextGeneration for mistral::Model {
     fn decode(&self, config: &mut GenerationConfig, tokens: &[u32]) -> Result<String> {
         decode_tokens!(config, tokens)
     }
+
+    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String> {
+        let tokens = config
+            .tokenizer
+            .encode(config.prompt.clone(), false)
+            .map_err(E::msg)?
+            .get_ids()
+            .to_vec();
+
+        // sampling
+        let mut cache = GenerationCache::new(Some(tokens));
+        for _ in 0..config.max_new_tokens {
+            self.get_next_token(config, &mut cache)?;
+
+            if cache.finished {
+                break;
+            }
+        }
+
+        // decode the tokens
+        let decoded = self.decode(config, &cache.output_tokens)?;
+
+        // clear kv cache
+        self.clear_kv_cache();
+
+        Ok(decoded)
+    }
 }
 
 impl TextGeneration for mixtral::Model {
@@ -252,5 +254,32 @@ impl TextGeneration for mixtral::Model {
 
     fn decode(&self, config: &mut GenerationConfig, tokens: &[u32]) -> Result<String> {
         decode_tokens!(config, tokens)
+    }
+
+    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String> {
+        let tokens = config
+            .tokenizer
+            .encode(config.prompt.clone(), false)
+            .map_err(E::msg)?
+            .get_ids()
+            .to_vec();
+
+        // sampling
+        let mut cache = GenerationCache::new(Some(tokens));
+        for _ in 0..config.max_new_tokens {
+            self.get_next_token(config, &mut cache)?;
+
+            if cache.finished {
+                break;
+            }
+        }
+
+        // decode the tokens
+        let decoded = self.decode(config, &cache.output_tokens)?;
+
+        // clear kv cache
+        self.clear_kv_cache();
+
+        Ok(decoded)
     }
 }

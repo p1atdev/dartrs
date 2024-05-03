@@ -1,37 +1,13 @@
-use std::panic;
-
 use candle_nn::Activation;
-use candle_transformers::models::{llama, mistral, mixtral};
-use serde_json::from_str;
 
-pub trait DartV2Llama {
-    fn dart_v2_100m() -> Self;
-}
-
-impl DartV2Llama for llama::Config {
-    fn dart_v2_100m() -> Self {
-        Self {
-            vocab_size: 30649,
-            intermediate_size: 3072,
-            hidden_size: 768,
-            num_attention_heads: 8,
-            num_key_value_heads: 1,
-            num_hidden_layers: 8,
-            use_flash_attn: false,
-            rms_norm_eps: 1e-05,
-            rope_theta: 1000.0,
-            bos_token_id: None,
-            eos_token_id: None,
-        }
-    }
-}
+use crate::models::{mistral, mixtral};
 
 pub trait DartV2Mistral {
-    fn dart_v2_100m() -> Self;
+    fn v2_100m(use_flash_attn: bool) -> Self;
 }
 
 impl DartV2Mistral for mistral::Config {
-    fn dart_v2_100m() -> Self {
+    fn v2_100m(use_flash_attn: bool) -> Self {
         Self {
             vocab_size: 30649,
             hidden_act: Activation::Silu,
@@ -44,42 +20,32 @@ impl DartV2Mistral for mistral::Config {
             rms_norm_eps: 1e-05,
             rope_theta: 1000.0,
             sliding_window: None,
-            use_flash_attn: false,
+            use_flash_attn,
         }
     }
 }
 
 pub trait DartV2Mixtral {
-    fn dart_v2_160m() -> Self;
+    fn v2_160m(use_flash_attn: bool) -> Self;
 }
 
 impl DartV2Mixtral for mixtral::Config {
-    // currenty the mixtral::Config of candle_transformer is not accessible
-    // so we will use serde_json to parse the config
-    fn dart_v2_160m() -> Self {
-        if let Ok(config) = from_str(
-            r#"
-        {
-            "vocab_size": 30649,
-            "hidden_act": "silu",
-            "hidden_size": 768,
-            "intermediate_size": 3072,
-            "max_position_embeddings": 1024,
-            "num_attention_heads": 8,
-            "num_experts_per_tok": 2,
-            "num_hidden_layers": 4,
-            "num_key_value_heads": 1,
-            "num_local_experts": 4,
-            "rms_norm_eps": 1e-05,
-            "rope_theta": 1000.0,
-            "sliding_window": 99999999,
-            "use_flash_attn": false
-        }
-        "#,
-        ) {
-            config
-        } else {
-            panic!("failed to parse config")
+    fn v2_160m(use_flash_attn: bool) -> Self {
+        Self {
+            vocab_size: 30649,
+            hidden_act: Activation::Silu,
+            hidden_size: 768,
+            intermediate_size: 3072,
+            max_position_embeddings: 1024,
+            num_attention_heads: 8,
+            num_experts_per_tok: 2,
+            num_hidden_layers: 4,
+            num_key_value_heads: 1,
+            num_local_experts: 4,
+            rms_norm_eps: 1e-05,
+            rope_theta: 1000.0,
+            sliding_window: None,
+            use_flash_attn,
         }
     }
 }
@@ -89,17 +55,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_llama_100m() {
-        llama::Config::dart_v2_100m();
-    }
-
-    #[test]
     fn test_mistral_100m() {
-        mistral::Config::dart_v2_100m();
+        mistral::Config::v2_100m(false);
     }
 
     #[test]
     fn test_mixtral_160m() {
-        mixtral::Config::dart_v2_160m();
+        mixtral::Config::v2_160m(false);
     }
 }

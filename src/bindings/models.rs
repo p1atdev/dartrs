@@ -1,9 +1,10 @@
 use crate::bindings::generation::DartGenerationConfig;
 use crate::generation::{GenerationConfig, TextGeneration};
-use crate::models::{MistralModelBuilder, MixtralModelBuilder, ModelBuilder, ModelRepositoy};
+use crate::models::{
+    mistral, mixtral, MistralModelBuilder, MixtralModelBuilder, ModelBuilder, ModelRepositoy,
+};
 
 use candle_core::{DType, Device};
-use candle_transformers::models::{mistral, mixtral};
 use hf_hub::api::sync::{Api, ApiBuilder};
 use hf_hub::Repo;
 use hf_hub::RepoType;

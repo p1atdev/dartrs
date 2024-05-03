@@ -1,10 +1,11 @@
+pub mod mistral;
+pub mod mixtral;
+
 use anyhow::{Error as E, Result};
 
 use crate::configs::*;
-use crate::polyfill::*;
 use candle_core::{DType, Device};
 use candle_nn::VarBuilder;
-use candle_transformers::models::{llama, mistral, mixtral};
 use hf_hub::api::sync::{Api, ApiRepo};
 use hf_hub::{Repo, RepoType};
 use tokenizers::Tokenizer;
@@ -72,7 +73,7 @@ impl ModelBuilder<mistral::Model> for MistralModelBuilder<mistral::Config> {
     }
 
     fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self {
-        let config = mistral::Config::dart_v2_100m();
+        let config = mistral::Config::v2_100m(false);
         Self {
             repo: repo.api_repo(),
             dtype,
@@ -105,7 +106,7 @@ impl ModelBuilder<mixtral::Model> for MixtralModelBuilder<mixtral::Config> {
     }
 
     fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self {
-        let config = mixtral::Config::dart_v2_160m();
+        let config = mixtral::Config::v2_160m(false);
         Self {
             repo: repo.api_repo(),
             dtype,
@@ -116,39 +117,6 @@ impl ModelBuilder<mixtral::Model> for MixtralModelBuilder<mixtral::Config> {
 
     fn load(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Result<mixtral::Model> {
         let builder = MixtralModelBuilder::new(repo, dtype, device);
-        builder.build()
-    }
-}
-
-pub struct LlamaModelBuilder<T> {
-    repo: ApiRepo,
-    dtype: DType,
-    device: Device,
-    config: T,
-}
-
-impl ModelBuilder<llama::Llama> for LlamaModelBuilder<llama::Config> {
-    fn build(&self) -> Result<llama::Llama> {
-        let model_path = self.repo.get("model.safetensors")?;
-        let var_builder = unsafe {
-            VarBuilder::from_mmaped_safetensors(&[model_path], self.dtype, &self.device)?
-        };
-        let model = llama::Llama::new(&self.config, var_builder)?;
-        Ok(model)
-    }
-
-    fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self {
-        let config = llama::Config::dart_v2_100m();
-        Self {
-            repo: repo.api_repo(),
-            dtype,
-            device: device.clone(),
-            config,
-        }
-    }
-
-    fn load(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Result<llama::Llama> {
-        let builder = LlamaModelBuilder::new(repo, dtype, device);
         builder.build()
     }
 }

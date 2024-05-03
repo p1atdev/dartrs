@@ -1,5 +1,5 @@
 use crate::bindings::models::{DartDevice, DartTokenizer};
-use crate::generation::{GenerationConfig, TextGeneration};
+use crate::generation::GenerationConfig;
 
 use candle_core::Device;
 use pyo3::prelude::*;

@@ -2,12 +2,12 @@ pub mod bindings;
 pub mod configs;
 pub mod generation;
 pub mod models;
-pub mod polyfill;
 pub mod prompt;
 pub mod tags;
 
 use bindings::generation::*;
 use bindings::models::*;
+use bindings::tags::*;
 
 use pyo3::prelude::*;
 
@@ -19,5 +19,11 @@ fn dartrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DartV2Mixtral>()?;
     m.add_class::<DartTokenizer>()?;
     m.add_class::<DartGenerationConfig>()?;
+    m.add_class::<DartLengthTag>()?;
+    m.add_class::<DartAspectRatioTag>()?;
+    m.add_class::<DartRatingTag>()?;
+    m.add_class::<DartIdentityTag>()?;
+    m.add_class::<DartReservedTag>()?;
+
     Ok(())
 }
