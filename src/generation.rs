@@ -3,6 +3,7 @@ use anyhow::{Error as E, Result};
 use candle_core::{DType, Device, Tensor};
 use candle_transformers::generation::LogitsProcessor;
 use candle_transformers::generation::Sampling;
+use rand::Rng;
 use tokenizers::Tokenizer;
 
 use crate::models::{mistral, mixtral};
@@ -79,7 +80,10 @@ impl GenerationConfig {
         };
         let seed = match seed {
             Some(seed) => seed,
-            None => rand::random(),
+            None => {
+                let mut rng = rand::thread_rng();
+                rng.gen()
+            }
         };
         let logits_processor = LogitsProcessor::from_sampling(seed, sampling);
 
