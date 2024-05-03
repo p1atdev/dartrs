@@ -3,7 +3,7 @@ use std::fmt;
 use std::str::FromStr;
 
 pub trait SpecialTag {
-    fn to_tag(&self) -> &str;
+    fn to_tag(&self) -> String;
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -16,13 +16,13 @@ pub enum LengthTag {
 }
 
 impl SpecialTag for LengthTag {
-    fn to_tag(&self) -> &str {
+    fn to_tag(&self) -> String {
         match self {
-            Self::VeryShort => "<|length:very_short|>",
-            Self::Short => "<|length:short|>",
-            Self::Medium => "<|length:medium|>",
-            Self::Long => "<|length:long|>",
-            Self::VeryLong => "<|length:very_long|>",
+            Self::VeryShort => "<|length:very_short|>".to_string(),
+            Self::Short => "<|length:short|>".to_string(),
+            Self::Medium => "<|length:medium|>".to_string(),
+            Self::Long => "<|length:long|>".to_string(),
+            Self::VeryLong => "<|length:very_long|>".to_string(),
         }
     }
 }
@@ -52,13 +52,13 @@ pub enum AspectRatioTag {
 }
 
 impl SpecialTag for AspectRatioTag {
-    fn to_tag(&self) -> &str {
+    fn to_tag(&self) -> String {
         match self {
-            Self::UltraWide => "<|aspect_ratio:ultra_wide|>",
-            Self::Wide => "<|aspect_ratio:wide|>",
-            Self::Square => "<|aspect_ratio:square|>",
-            Self::Tall => "<|aspect_ratio:tall|>",
-            Self::UltraTall => "<|aspect_ratio:ultra_tall|>",
+            Self::UltraWide => "<|aspect_ratio:ultra_wide|>".to_string(),
+            Self::Wide => "<|aspect_ratio:wide|>".to_string(),
+            Self::Square => "<|aspect_ratio:square|>".to_string(),
+            Self::Tall => "<|aspect_ratio:tall|>".to_string(),
+            Self::UltraTall => "<|aspect_ratio:ultra_tall|>".to_string(),
         }
     }
 }
@@ -89,14 +89,14 @@ pub enum RatingTag {
 }
 
 impl SpecialTag for RatingTag {
-    fn to_tag(&self) -> &str {
+    fn to_tag(&self) -> String {
         match self {
-            Self::Sfw => "<|rating:sfw|>",
-            Self::General => "<|rating:general|>",
-            Self::Sensitive => "<|rating:sensitive|>",
-            Self::Nsfw => "<|rating:nsfw|>",
-            Self::Questionable => "<|rating:questionable|>",
-            Self::Explicit => "<|rating:explicit|>",
+            Self::Sfw => "<|rating:sfw|>".to_string(),
+            Self::General => "<|rating:general|>".to_string(),
+            Self::Sensitive => "<|rating:sensitive|>".to_string(),
+            Self::Nsfw => "<|rating:nsfw|>".to_string(),
+            Self::Questionable => "<|rating:questionable|>".to_string(),
+            Self::Explicit => "<|rating:explicit|>".to_string(),
         }
     }
 }
@@ -125,11 +125,11 @@ pub enum IdentityTag {
 }
 
 impl SpecialTag for IdentityTag {
-    fn to_tag(&self) -> &str {
+    fn to_tag(&self) -> String {
         match self {
-            Self::None => "<|identity:none|>",
-            Self::Lax => "<|identity:lax|>",
-            Self::Strict => "<|identity:strict|>",
+            Self::None => "<|identity:none|>".to_string(),
+            Self::Lax => "<|identity:lax|>".to_string(),
+            Self::Strict => "<|identity:strict|>".to_string(),
         }
     }
 }
@@ -161,17 +161,17 @@ pub enum ReservedTag {
 }
 
 impl SpecialTag for ReservedTag {
-    fn to_tag(&self) -> &str {
+    fn to_tag(&self) -> String {
         match self {
-            Self::Bos => "<|bos|>",
-            Self::Eos => "<|eos|>",
-            Self::CopyrightStart => "<copyright>",
-            Self::CopyrightEnd => "</copyright>",
-            Self::CharacterStart => "<character>",
-            Self::CharacterEnd => "</character>",
-            Self::GeneralStart => "<general>",
-            Self::GeneralEnd => "</general>",
-            Self::InputEnd => "<|input_end|>",
+            Self::Bos => "<|bos|>".to_string(),
+            Self::Eos => "<|eos|>".to_string(),
+            Self::CopyrightStart => "<copyright>".to_string(),
+            Self::CopyrightEnd => "</copyright>".to_string(),
+            Self::CharacterStart => "<character>".to_string(),
+            Self::CharacterEnd => "</character>".to_string(),
+            Self::GeneralStart => "<general>".to_string(),
+            Self::GeneralEnd => "</general>".to_string(),
+            Self::InputEnd => "<|input_end|>".to_string(),
         }
     }
 }

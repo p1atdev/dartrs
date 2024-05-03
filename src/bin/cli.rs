@@ -8,7 +8,7 @@ use hf_hub::{api::sync::Api, Repo, RepoType};
 
 use dartrs::generation::{GenerationConfig, TextGeneration};
 use dartrs::models::*;
-use dartrs::prompt::compose_prompt;
+use dartrs::prompt::compose_prompt_v2;
 use dartrs::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag};
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -109,7 +109,7 @@ fn main() -> Result<()> {
     let seed = args.seed.unwrap_or_else(|| random());
 
     // generate text
-    let prompt = compose_prompt(
+    let prompt = compose_prompt_v2(
         &args.copyright,
         &args.character,
         args.rating,

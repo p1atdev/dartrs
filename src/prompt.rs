@@ -3,7 +3,7 @@ use crate::tags::ReservedTag::{
 };
 use crate::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag, SpecialTag};
 
-pub fn compose_prompt(
+pub fn compose_prompt_v2(
     copyright: &str,
     character: &str,
     rating: RatingTag,
@@ -33,7 +33,7 @@ mod tests {
 
     #[test]
     fn test_compose_prompt() {
-        let prompt = compose_prompt(
+        let prompt = compose_prompt_v2(
             "vocaloid",
             "hatsune miku",
             RatingTag::Sfw,

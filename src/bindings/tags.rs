@@ -1,4 +1,4 @@
-use crate::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag, ReservedTag};
+use crate::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag, ReservedTag, SpecialTag};
 
 use pyo3::exceptions;
 use pyo3::prelude::*;
@@ -38,6 +38,10 @@ impl DartLengthTag {
             _ => Err(exceptions::PyValueError::new_err("invalid length tag")),
         }
     }
+
+    fn to_tag(&self) -> String {
+        LengthTag::from(self.clone()).to_tag()
+    }
 }
 
 #[pyclass(name = "AspectRatioTag")]
@@ -76,6 +80,10 @@ impl DartAspectRatioTag {
                 "invalid aspect ratio tag",
             )),
         }
+    }
+
+    fn to_tag(&self) -> String {
+        AspectRatioTag::from(self.clone()).to_tag()
     }
 }
 
@@ -117,6 +125,10 @@ impl DartRatingTag {
             _ => Err(exceptions::PyValueError::new_err("invalid rating tag")),
         }
     }
+
+    fn to_tag(&self) -> String {
+        RatingTag::from(self.clone()).to_tag()
+    }
 }
 
 #[pyclass(name = "IdentityTag")]
@@ -147,6 +159,10 @@ impl DartIdentityTag {
             "<|identity:strict|>" => Ok(DartIdentityTag::Strict),
             _ => Err(exceptions::PyValueError::new_err("invalid identity tag")),
         }
+    }
+
+    fn to_tag(&self) -> String {
+        IdentityTag::from(self.clone()).to_tag()
     }
 }
 
@@ -196,5 +212,9 @@ impl DartReservedTag {
             "<|input_end|>" => Ok(DartReservedTag::InputEnd),
             _ => Err(exceptions::PyValueError::new_err("invalid reserved tag")),
         }
+    }
+
+    fn to_tag(&self) -> String {
+        ReservedTag::from(self.clone()).to_tag()
     }
 }

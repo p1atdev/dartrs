@@ -7,6 +7,7 @@ pub mod tags;
 
 use bindings::generation::*;
 use bindings::models::*;
+use bindings::prompt::*;
 use bindings::tags::*;
 
 use pyo3::prelude::*;
@@ -24,6 +25,7 @@ fn dartrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DartRatingTag>()?;
     m.add_class::<DartIdentityTag>()?;
     m.add_class::<DartReservedTag>()?;
+    m.add_function(wrap_pyfunction!(dart_compose_prompt_v2, m)?)?;
 
     Ok(())
 }
