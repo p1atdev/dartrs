@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Optional, Callable
 from tokenizers import Tokenizer
 
@@ -26,7 +27,7 @@ class DartGenerationConfig:
         seed: int | None = None,
     ) -> None: ...
 
-class DartModel:
+class DartModel(ABC):
     def __init__(
         self,
         hub_name: str,
@@ -48,3 +49,43 @@ class DartTokenizer:
         identifier,
         revision=...,
     ) -> DartTokenizer: ...
+
+class SpecialTag(ABC):
+    @abstractmethod
+    def to_tag(self) -> str: ...
+
+class LengthTag(SpecialTag):
+    VeryShort: LengthTag
+    Short: LengthTag
+    Medium: LengthTag
+    Long: LengthTag
+    VeryLong: LengthTag
+
+class AspectRatioTag(SpecialTag):
+    UltraWide: AspectRatioTag
+    Wide: AspectRatioTag
+    Square: AspectRatioTag
+    Tall: AspectRatioTag
+    UltraTall: AspectRatioTag
+
+class RatingTag(SpecialTag):
+    Sfw: RatingTag
+    General: RatingTag
+    Sensitive: RatingTag
+    Nsfw: RatingTag
+    Questionable: RatingTag
+    Explicit: RatingTag
+
+class IdentityTag(SpecialTag):
+    Lax: IdentityTag
+    Strict: IdentityTag
+
+def compose_prompt_v2(
+    copyright: str = "",
+    character: str = "",
+    rating: RatingTag = RatingTag.Sfw,
+    aspect_ratio: AspectRatioTag = AspectRatioTag.Tall,
+    length: LengthTag = LengthTag.Long,
+    identity_level: IdentityTag = IdentityTag.Lax,
+    prompt: str = "",
+) -> str: ...
