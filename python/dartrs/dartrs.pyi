@@ -81,11 +81,11 @@ class IdentityTag(SpecialTag):
     Strict: IdentityTag
 
 def compose_prompt_v2(
-    copyright: str = "",
-    character: str = "",
-    rating: RatingTag = RatingTag.Sfw,
-    aspect_ratio: AspectRatioTag = AspectRatioTag.Tall,
-    length: LengthTag = LengthTag.Long,
-    identity_level: IdentityTag = IdentityTag.Lax,
-    prompt: str = "",
+    copyright: str,
+    character: str,
+    rating: RatingTag,
+    aspect_ratio: AspectRatioTag,
+    length: LengthTag,
+    identity_level: IdentityTag,
+    prompt: str,
 ) -> str: ...
