@@ -132,13 +132,13 @@ fn main() -> Result<()> {
 
     match model_type {
         ModelType::Mistral => {
-            let mut model = MistralModelBuilder::load(model_name.clone(), &api, dtype, &device)?;
+            let mut model = MistralModelBuilder::load(&repo, dtype, &device)?;
             println!("loaded the model in {:?}", start.elapsed());
 
             run!(model, generation_config);
         }
         ModelType::Mixtral => {
-            let mut model = MixtralModelBuilder::load(model_name.clone(), &api, dtype, &device)?;
+            let mut model = MixtralModelBuilder::load(&repo, dtype, &device)?;
             println!("loaded the model in {:?}", start.elapsed());
 
             run!(model, generation_config);

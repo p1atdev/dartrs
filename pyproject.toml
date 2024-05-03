@@ -20,7 +20,7 @@ license = { text = "Apache-2.0" }
 [tool.maturin]
 features = ["pyo3/extension-module"]
 python-source = "python"
-# module-name = "dartrs._dartrs"
+module-name = "dartrs.dartrs"
 
 [tool.pdm.dev-dependencies]
 dev = ["pytest>=8.2.0", "pytest-icdiff>=0.9"]

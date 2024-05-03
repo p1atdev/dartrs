@@ -1,10 +1,12 @@
-use crate::models::MistralModelBuilder;
-use crate::models::MixtralModelBuilder;
-use crate::models::ModelBuilder;
+use crate::bindings::generation::DartGenerationConfig;
+use crate::generation::{GenerationConfig, TextGeneration};
+use crate::models::{MistralModelBuilder, MixtralModelBuilder, ModelBuilder, ModelRepositoy};
 
 use candle_core::{DType, Device};
 use candle_transformers::models::{mistral, mixtral};
-use hf_hub::api::sync::ApiBuilder;
+use hf_hub::api::sync::{Api, ApiBuilder};
+use hf_hub::Repo;
+use hf_hub::RepoType;
 use tokenizers::Tokenizer;
 
 use pyo3::exceptions;
@@ -48,16 +50,18 @@ impl From<DartDevice> for Device {
 }
 
 #[pyclass]
-pub(crate) struct DartMistral(mistral::Model);
+pub(crate) struct DartV2Mistral(mistral::Model);
 
-impl From<mistral::Model> for DartMistral {
+impl From<mistral::Model> for DartV2Mistral {
     fn from(model: mistral::Model) -> Self {
         Self(model)
     }
 }
 
-impl DartMistral {
-    fn load_v2(
+#[pymethods]
+impl DartV2Mistral {
+    #[new]
+    fn new(
         hub_name: String,
         revision: Option<String>,
         dtype: Option<DartDType>,
@@ -77,7 +81,9 @@ impl DartMistral {
         let device = Device::from(device);
         let dtype = DType::from(dtype);
 
-        let model = MistralModelBuilder::load(hub_name, &api, dtype, &device);
+        let repo = ModelRepositoy::new(hub_name.clone(), api.clone(), revision);
+
+        let model = MistralModelBuilder::load(&repo, dtype, &device);
         match model {
             Ok(model) => Ok(Self(model)),
             Err(e) => Err(exceptions::PyOSError::new_err(format!(
@@ -86,19 +92,32 @@ impl DartMistral {
             ))),
         }
     }
+
+    fn generate(&mut self, config: DartGenerationConfig) -> PyResult<String> {
+        let mut config = GenerationConfig::from(config);
+        match self.0.generate(&mut config) {
+            Ok(text) => Ok(text),
+            Err(e) => Err(exceptions::PyOSError::new_err(format!(
+                "Failed to generate text: {}",
+                e
+            ))),
+        }
+    }
 }
 
 #[pyclass]
-pub(crate) struct DartMixtral(mixtral::Model);
+pub(crate) struct DartV2Mixtral(mixtral::Model);
 
-impl From<mixtral::Model> for DartMixtral {
+impl From<mixtral::Model> for DartV2Mixtral {
     fn from(model: mixtral::Model) -> Self {
         Self(model)
     }
 }
 
-impl DartMixtral {
-    fn load_v2(
+#[pymethods]
+impl DartV2Mixtral {
+    #[new]
+    fn new(
         hub_name: String,
         revision: Option<String>,
         dtype: Option<DartDType>,
@@ -118,7 +137,9 @@ impl DartMixtral {
         let device = Device::from(device);
         let dtype = DType::from(dtype);
 
-        let model = MixtralModelBuilder::load(hub_name, &api, dtype, &device);
+        let repo = ModelRepositoy::new(hub_name.clone(), api.clone(), revision);
+
+        let model = MixtralModelBuilder::load(&repo, dtype, &device);
         match model {
             Ok(model) => Ok(Self(model)),
             Err(e) => Err(exceptions::PyOSError::new_err(format!(
@@ -127,13 +148,67 @@ impl DartMixtral {
             ))),
         }
     }
+
+    fn generate(&mut self, config: DartGenerationConfig) -> PyResult<String> {
+        let mut config = GenerationConfig::from(config);
+        match self.0.generate(&mut config) {
+            Ok(text) => Ok(text),
+            Err(e) => Err(exceptions::PyOSError::new_err(format!(
+                "Failed to generate text: {}",
+                e
+            ))),
+        }
+    }
 }
 
 #[pyclass]
+#[derive(Debug, Clone)]
 pub(crate) struct DartTokenizer(Tokenizer);
 
-impl From<Tokenizer> for DartTokenizer {
-    fn from(tokenizer: Tokenizer) -> Self {
+impl DartTokenizer {
+    fn new(tokenizer: Tokenizer) -> Self {
         Self(tokenizer)
+    }
+}
+
+impl From<DartTokenizer> for Tokenizer {
+    fn from(tokenizer: DartTokenizer) -> Self {
+        tokenizer.0
+    }
+}
+
+#[pymethods]
+impl DartTokenizer {
+    #[staticmethod]
+    #[pyo3(signature = (identifier, revision = String::from("main")))]
+    fn from_pretrained(identifier: &str, revision: String) -> PyResult<Self> {
+        let api = match Api::new() {
+            Ok(api) => api,
+            Err(e) => {
+                return Err(exceptions::PyOSError::new_err(format!(
+                    "Failed to create API: {}",
+                    e
+                )))
+            }
+        };
+        let repo = api.repo(Repo::with_revision(
+            identifier.to_string(),
+            RepoType::Model,
+            revision,
+        ));
+        let tokenizer_json = match repo.get("tokenizer.json") {
+            Ok(tokenizer_json) => tokenizer_json,
+            Err(e) => {
+                return Err(exceptions::PyOSError::new_err(format!(
+                    "Failed to get tokenizer.json: {}",
+                    e
+                )))
+            }
+        };
+        let tokenizer = Tokenizer::from_file(tokenizer_json).map_err(|e| {
+            exceptions::PyOSError::new_err(format!("Failed to load tokenizer: {}", e))
+        })?;
+
+        Ok(Self::new(tokenizer))
     }
 }

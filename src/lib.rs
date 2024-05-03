@@ -15,8 +15,9 @@ use pyo3::prelude::*;
 fn dartrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DartDType>()?;
     m.add_class::<DartDevice>()?;
-    m.add_class::<DartMistral>()?;
-    m.add_class::<DartMixtral>()?;
+    m.add_class::<DartV2Mistral>()?;
+    m.add_class::<DartV2Mixtral>()?;
+    m.add_class::<DartTokenizer>()?;
     m.add_class::<DartGenerationConfig>()?;
     Ok(())
 }

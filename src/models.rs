@@ -11,8 +11,8 @@ use tokenizers::Tokenizer;
 
 pub trait ModelBuilder<T> {
     fn build(&self) -> Result<T>;
-    fn new(model_name: String, api: &Api, dtype: DType, device: &Device) -> Self;
-    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<T>;
+    fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self;
+    fn load(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Result<T>;
 }
 
 pub struct ModelRepositoy {
@@ -44,6 +44,14 @@ impl ModelRepositoy {
         let tokenizer = Tokenizer::from_file(tokenizer_json).map_err(E::msg)?;
         Ok(tokenizer)
     }
+
+    fn api_repo(&self) -> ApiRepo {
+        self.api.repo(Repo::with_revision(
+            self.hub_name.clone(),
+            RepoType::Model,
+            self.revision.clone(),
+        ))
+    }
 }
 
 pub struct MistralModelBuilder<T> {
@@ -63,24 +71,18 @@ impl ModelBuilder<mistral::Model> for MistralModelBuilder<mistral::Config> {
         Ok(model)
     }
 
-    fn new(model_name: String, api: &Api, dtype: DType, device: &Device) -> Self {
-        let repo = api.repo(Repo::with_revision(
-            model_name,
-            RepoType::Model,
-            "main".to_string(),
-        ));
-
+    fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self {
         let config = mistral::Config::dart_v2_100m();
         Self {
-            repo,
+            repo: repo.api_repo(),
             dtype,
             device: device.clone(),
             config,
         }
     }
 
-    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<mistral::Model> {
-        let builder = MistralModelBuilder::new(hub_name, api, dtype, device);
+    fn load(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Result<mistral::Model> {
+        let builder = MistralModelBuilder::new(repo, dtype, device);
         builder.build()
     }
 }
@@ -102,24 +104,18 @@ impl ModelBuilder<mixtral::Model> for MixtralModelBuilder<mixtral::Config> {
         Ok(model)
     }
 
-    fn new(model_name: String, api: &Api, dtype: DType, device: &Device) -> Self {
-        let repo = api.repo(Repo::with_revision(
-            model_name,
-            RepoType::Model,
-            "main".to_string(),
-        ));
-
+    fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self {
         let config = mixtral::Config::dart_v2_160m();
         Self {
-            repo,
+            repo: repo.api_repo(),
             dtype,
             device: device.clone(),
             config,
         }
     }
 
-    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<mixtral::Model> {
-        let builder = MixtralModelBuilder::new(hub_name, api, dtype, device);
+    fn load(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Result<mixtral::Model> {
+        let builder = MixtralModelBuilder::new(repo, dtype, device);
         builder.build()
     }
 }
@@ -141,24 +137,18 @@ impl ModelBuilder<llama::Llama> for LlamaModelBuilder<llama::Config> {
         Ok(model)
     }
 
-    fn new(model_name: String, api: &Api, dtype: DType, device: &Device) -> Self {
-        let repo = api.repo(Repo::with_revision(
-            model_name,
-            RepoType::Model,
-            "main".to_string(),
-        ));
-
+    fn new(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Self {
         let config = llama::Config::dart_v2_100m();
         Self {
-            repo,
+            repo: repo.api_repo(),
             dtype,
             device: device.clone(),
             config,
         }
     }
 
-    fn load(hub_name: String, api: &Api, dtype: DType, device: &Device) -> Result<llama::Llama> {
-        let builder = LlamaModelBuilder::new(hub_name, api, dtype, device);
+    fn load(repo: &ModelRepositoy, dtype: DType, device: &Device) -> Result<llama::Llama> {
+        let builder = LlamaModelBuilder::new(repo, dtype, device);
         builder.build()
     }
 }
