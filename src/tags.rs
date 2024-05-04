@@ -7,7 +7,7 @@ pub trait SpecialTag {
     fn is_special(tag: &str) -> bool;
 }
 
-#[derive(Debug, Clone, clap::ValueEnum)]
+#[derive(Debug, Clone)]
 pub enum LengthTag {
     VeryShort,
     Short,
@@ -47,7 +47,7 @@ impl FromStr for LengthTag {
     }
 }
 
-#[derive(Debug, Clone, clap::ValueEnum)]
+#[derive(Debug, Clone)]
 pub enum AspectRatioTag {
     UltraWide,
     Wide,
@@ -87,7 +87,7 @@ impl FromStr for AspectRatioTag {
     }
 }
 
-#[derive(Debug, Clone, clap::ValueEnum)]
+#[derive(Debug, Clone)]
 pub enum RatingTag {
     Sfw,
     General,
@@ -130,7 +130,7 @@ impl FromStr for RatingTag {
     }
 }
 
-#[derive(Debug, Clone, clap::ValueEnum)]
+#[derive(Debug, Clone)]
 pub enum IdentityTag {
     None,
     Lax,

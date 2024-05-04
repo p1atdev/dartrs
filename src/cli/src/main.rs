@@ -1,6 +1,5 @@
 use anyhow::{Error as E, Result};
 use clap::{Parser, ValueEnum};
-use rand::random;
 
 use candle_core::{DType, Device};
 
@@ -106,7 +105,7 @@ fn main() -> Result<()> {
     let temperature = Some(1.0);
     let top_p = Some(0.9);
     let top_k = Some(100);
-    let seed = args.seed.unwrap_or_else(|| random());
+    let seed = args.seed;
 
     // generate text
     let prompt = compose_prompt_v2(
@@ -127,7 +126,7 @@ fn main() -> Result<()> {
         temperature,
         top_p,
         top_k,
-        Some(seed),
+        seed,
     );
 
     match model_type {
