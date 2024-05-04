@@ -45,17 +45,12 @@ jobs:
       
       - name: Install openssl
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config
+          sudo apt update
+          sudo apt install -y libssl-dev pkg-config
 
       - name: Check openssl
         run: |
           dpkg -L libssl-dev
-          echo $OPENSSL_DIR
-          echo $OPENSSL_INCLUDE_DIR
-          echo $OPENSSL_LIB_DIR
-          echo $OPENSSL_STATIC
-          echo $OPENSSL_NO_VENDOR
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
