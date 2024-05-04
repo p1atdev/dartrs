@@ -1,7 +1,4 @@
-from dartrs.dartrs import (
-    DartDevice,
-    DartTokenizer,
-)
+from dartrs.dartrs import DartDevice, DartTokenizer, DartModel, DartGenerationConfig
 from dartrs.v2 import (
     compose_prompt,
     GenerationConfig,
@@ -23,7 +20,7 @@ def prepare_models():
     return model, tokenizer
 
 
-def generate(model, config):
+def generate(model: DartModel, config: DartGenerationConfig):
     start = time.time()
     output = model.generate(config)
     end = time.time()

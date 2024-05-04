@@ -78,7 +78,7 @@ def GenerationConfig(
     )
 
 
-class MixtralModel:
+class MixtralModel(dartrs.DartModel):
     @classmethod
     def from_pretrained(
         cls,
@@ -88,3 +88,15 @@ class MixtralModel:
         device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
     ) -> dartrs.DartV2Mixtral:
         return dartrs.DartV2Mixtral(hub_name, revision, dtype, device)
+
+
+class MistralModel(dartrs.DartModel):
+    @classmethod
+    def from_pretrained(
+        cls,
+        hub_name: str,
+        revision: str | None = None,
+        dtype: dartrs.DartDType = dartrs.DartDType.FP32,
+        device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
+    ) -> dartrs.DartV2Mistral:
+        return dartrs.DartV2Mistral(hub_name, revision, dtype, device)
