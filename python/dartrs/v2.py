@@ -54,31 +54,20 @@ def compose_prompt(
     )
 
 
-def GenerationConfig(
-    prompt: str,
-    tokenizer: dartrs.DartTokenizer,
-    device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
-    eos_token: str | None = None,
-    max_new_tokens: int | None = 256,
-    temperature: float | None = 1.0,
-    top_k: int | None = 100,
-    top_p: float | None = 0.9,
-    seed: int | None = None,
-) -> dartrs.DartGenerationConfig:
-    return dartrs.DartGenerationConfig(
-        device=device,
-        tokenizer=tokenizer,
-        prompt=prompt,
-        eos_token=eos_token,
-        max_new_tokens=max_new_tokens,
-        temperature=temperature,
-        top_k=top_k,
-        top_p=top_p,
-        seed=seed,
-    )
+class V2Model:
+    model: dartrs.DartV2Mistral | dartrs.DartV2Mixtral
+
+    def __init__(
+        self,
+        model: dartrs.DartV2Mistral | dartrs.DartV2Mixtral,
+    ) -> None:
+        self.model = model
+
+    def generate(self, config: dartrs.GenerationConfig) -> str:
+        return self.model.generate(config)
 
 
-class MixtralModel(dartrs.DartModel):
+class MixtralModel(V2Model):
     @classmethod
     def from_pretrained(
         cls,
@@ -86,11 +75,11 @@ class MixtralModel(dartrs.DartModel):
         revision: str | None = None,
         dtype: dartrs.DartDType = dartrs.DartDType.FP32,
         device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
-    ) -> dartrs.DartV2Mixtral:
-        return dartrs.DartV2Mixtral(hub_name, revision, dtype, device)
+    ) -> V2Model:
+        return cls(dartrs.DartV2Mixtral(hub_name, revision, dtype, device))
 
 
-class MistralModel(dartrs.DartModel):
+class MistralModel(V2Model):
     @classmethod
     def from_pretrained(
         cls,
@@ -98,5 +87,5 @@ class MistralModel(dartrs.DartModel):
         revision: str | None = None,
         dtype: dartrs.DartDType = dartrs.DartDType.FP32,
         device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
-    ) -> dartrs.DartV2Mistral:
-        return dartrs.DartV2Mistral(hub_name, revision, dtype, device)
+    ) -> V2Model:
+        return cls(dartrs.DartV2Mistral(hub_name, revision, dtype, device))

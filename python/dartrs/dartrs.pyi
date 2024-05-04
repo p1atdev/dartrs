@@ -11,7 +11,7 @@ class DartDevice:
     @classmethod
     def Cuda(cls, id: int) -> ...: ...
 
-class DartGenerationConfig:
+class GenerationConfig:
     def __init__(
         self,
         device: DartDevice,
@@ -25,7 +25,7 @@ class DartGenerationConfig:
         seed: int | None = None,
     ) -> None: ...
 
-class DartModel(ABC):
+class DartV2Mistral:
     def __init__(
         self,
         hub_name: str,
@@ -35,11 +35,21 @@ class DartModel(ABC):
     ) -> None:
         raise NotImplementedError
 
-    def generate(self, config: DartGenerationConfig) -> str:
+    def generate(self, config: GenerationConfig) -> str:
         raise NotImplementedError
 
-class DartV2Mistral(DartModel): ...
-class DartV2Mixtral(DartModel): ...
+class DartV2Mixtral:
+    def __init__(
+        self,
+        hub_name: str,
+        revision: str | None = None,
+        dtype: DartDType = DartDType.FP32,
+        device: DartDevice = DartDevice.Cpu(),
+    ) -> None:
+        raise NotImplementedError
+
+    def generate(self, config: GenerationConfig) -> str:
+        raise NotImplementedError
 
 class DartTokenizer:
     @staticmethod

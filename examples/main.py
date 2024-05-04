@@ -1,12 +1,13 @@
-from dartrs.dartrs import DartDevice, DartTokenizer, DartModel, DartGenerationConfig
+from dartrs.dartrs import DartDevice, DartTokenizer, GenerationConfig
+from dartrs.utils import get_generation_config
 from dartrs.v2 import (
     compose_prompt,
-    GenerationConfig,
     LengthTag,
     RatingTag,
     AspectRatioTag,
     IdentityTag,
     MixtralModel,
+    V2Model,
 )
 import time
 
@@ -20,7 +21,7 @@ def prepare_models():
     return model, tokenizer
 
 
-def generate(model: DartModel, config: DartGenerationConfig):
+def generate(model: V2Model, config: GenerationConfig):
     start = time.time()
     output = model.generate(config)
     end = time.time()
@@ -35,7 +36,7 @@ def main():
     # generate 5 times
     generate(
         model,
-        GenerationConfig(
+        get_generation_config(
             prompt=compose_prompt(
                 copyright="",
                 character="",
@@ -51,7 +52,7 @@ def main():
     )
     generate(
         model,
-        GenerationConfig(
+        get_generation_config(
             prompt=compose_prompt(
                 prompt="2girls",
             ),
@@ -62,7 +63,7 @@ def main():
 
     generate(
         model,
-        GenerationConfig(
+        get_generation_config(
             prompt=compose_prompt(
                 prompt="1girl, solo",
             ),

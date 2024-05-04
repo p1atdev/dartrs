@@ -5,7 +5,7 @@ use candle_core::Device;
 use pyo3::prelude::*;
 use tokenizers::Tokenizer;
 
-#[pyclass]
+#[pyclass(name = "GenerationConfig")]
 #[derive(Clone)]
 pub struct DartGenerationConfig {
     device: DartDevice,
