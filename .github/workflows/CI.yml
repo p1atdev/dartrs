@@ -24,30 +24,30 @@ jobs:
     strategy:
       matrix:
         platform:
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: x86_64
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: x86
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: aarch64
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: armv7
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: s390x
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: ppc64le
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+      
       - name: Install openssl
-        run: sudo apt-get update && sudo apt-get install -y openssl-dev libssl-dev pkg-config build-essential
-      - name: Set OpenSSL path
         run: |
-          export OPENSSL_DIR=/usr
-          export OPENSSL_INCLUDE_DIR=/usr/include
-          export OPENSSL_LIB_DIR=/usr/lib
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev pkg-config
+
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -55,6 +55,7 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
+
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
