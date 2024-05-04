@@ -29,6 +29,7 @@ class RatingTag(Enum):
 
 
 class IdentityTag(Enum):
+    Free = dartrs.IdentityTag.Free
     Lax = dartrs.IdentityTag.Lax
     Strict = dartrs.IdentityTag.Strict
 

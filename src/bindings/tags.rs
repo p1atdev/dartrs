@@ -134,7 +134,7 @@ impl DartRatingTag {
 #[pyclass(name = "IdentityTag")]
 #[derive(Debug, Clone)]
 pub enum DartIdentityTag {
-    None,
+    Free,
     Lax,
     Strict,
 }
@@ -142,7 +142,7 @@ pub enum DartIdentityTag {
 impl From<DartIdentityTag> for IdentityTag {
     fn from(tag: DartIdentityTag) -> Self {
         match tag {
-            DartIdentityTag::None => IdentityTag::None,
+            DartIdentityTag::Free => IdentityTag::None,
             DartIdentityTag::Lax => IdentityTag::Lax,
             DartIdentityTag::Strict => IdentityTag::Strict,
         }
@@ -154,7 +154,7 @@ impl DartIdentityTag {
     #[new]
     fn new(tag: &str) -> PyResult<Self> {
         match tag {
-            "<|identity:none|>" => Ok(DartIdentityTag::None),
+            "<|identity:none|>" => Ok(DartIdentityTag::Free),
             "<|identity:lax|>" => Ok(DartIdentityTag::Lax),
             "<|identity:strict|>" => Ok(DartIdentityTag::Strict),
             _ => Err(exceptions::PyValueError::new_err("invalid identity tag")),

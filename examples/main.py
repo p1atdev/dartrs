@@ -13,7 +13,7 @@ from dartrs.v2 import (
 )
 import time
 
-MODEL_NAME = "p1atdev/dart-v2-mixtral-160m-sft-2"
+MODEL_NAME = "p1atdev/dart-v2-mixtral-160m-sft-8"
 
 
 def prepare_models():
@@ -45,7 +45,7 @@ def main():
                 rating=RatingTag.Sfw,
                 aspect_ratio=AspectRatioTag.Tall,
                 length=LengthTag.Long,
-                identity_level=IdentityTag.Lax,
+                identity_level=IdentityTag.Free,
                 prompt="1girl, cat ears",
             ),
             tokenizer=tokenizer,

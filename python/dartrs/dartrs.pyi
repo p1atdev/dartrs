@@ -75,6 +75,7 @@ class RatingTag(SpecialTag):
     Explicit: RatingTag
 
 class IdentityTag(SpecialTag):
+    Free: IdentityTag
     Lax: IdentityTag
     Strict: IdentityTag
 

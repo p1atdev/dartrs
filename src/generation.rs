@@ -7,6 +7,8 @@ use rand::Rng;
 use tokenizers::Tokenizer;
 
 use crate::models::{mistral, mixtral};
+use crate::tags::ReservedTag;
+use crate::tags::SpecialTag;
 
 pub struct GenerationCache {
     input_tokens: Vec<u32>,
@@ -116,7 +118,18 @@ pub trait TextGeneration {
 
     fn decode(&self, config: &mut GenerationConfig, tokens: &[u32]) -> Result<String>;
 
-    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String>;
+    fn generate_tokens(&mut self, config: &mut GenerationConfig) -> Result<Vec<String>>;
+    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String> {
+        let tokens = self.generate_tokens(config)?;
+
+        let text = tokens
+            .into_iter()
+            .filter(|token| !ReservedTag::is_special(token))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        Ok(text)
+    }
 
     fn run(&mut self, config: &mut GenerationConfig) -> Result<()> {
         use std::io::Write;
@@ -219,7 +232,7 @@ impl TextGeneration for mistral::Model {
         decode_tokens!(config, tokens)
     }
 
-    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String> {
+    fn generate_tokens(&mut self, config: &mut GenerationConfig) -> Result<Vec<String>> {
         let tokens = config
             .tokenizer
             .encode(config.prompt.clone(), false)
@@ -237,13 +250,17 @@ impl TextGeneration for mistral::Model {
             }
         }
 
-        // decode the tokens
-        let decoded = self.decode(config, &cache.output_tokens)?;
-
         // clear kv cache
         self.clear_kv_cache();
 
-        Ok(decoded)
+        // decode the tokens
+        let decoded = &cache
+            .output_tokens
+            .iter()
+            .map(|&token| self.decode(config, &[token]))
+            .collect::<Result<Vec<String>>>()?;
+
+        Ok(decoded.clone())
     }
 }
 
@@ -260,7 +277,7 @@ impl TextGeneration for mixtral::Model {
         decode_tokens!(config, tokens)
     }
 
-    fn generate(&mut self, config: &mut GenerationConfig) -> Result<String> {
+    fn generate_tokens(&mut self, config: &mut GenerationConfig) -> Result<Vec<String>> {
         let tokens = config
             .tokenizer
             .encode(config.prompt.clone(), false)
@@ -278,12 +295,16 @@ impl TextGeneration for mixtral::Model {
             }
         }
 
-        // decode the tokens
-        let decoded = self.decode(config, &cache.output_tokens)?;
-
         // clear kv cache
         self.clear_kv_cache();
 
-        Ok(decoded)
+        // decode the tokens
+        let decoded = &cache
+            .output_tokens
+            .iter()
+            .map(|&token| self.decode(config, &[token]))
+            .collect::<Result<Vec<String>>>()?;
+
+        Ok(decoded.clone())
     }
 }

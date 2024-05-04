@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 pub trait SpecialTag {
     fn to_tag(&self) -> String;
+    fn is_special(tag: &str) -> bool;
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -24,6 +25,10 @@ impl SpecialTag for LengthTag {
             Self::Long => "<|length:long|>".to_string(),
             Self::VeryLong => "<|length:very_long|>".to_string(),
         }
+    }
+
+    fn is_special(tag: &str) -> bool {
+        tag.starts_with("<|length:") && tag.ends_with("|>")
     }
 }
 
@@ -60,6 +65,10 @@ impl SpecialTag for AspectRatioTag {
             Self::Tall => "<|aspect_ratio:tall|>".to_string(),
             Self::UltraTall => "<|aspect_ratio:ultra_tall|>".to_string(),
         }
+    }
+
+    fn is_special(tag: &str) -> bool {
+        tag.starts_with("<|aspect_ratio:") && tag.ends_with("|>")
     }
 }
 
@@ -99,6 +108,10 @@ impl SpecialTag for RatingTag {
             Self::Explicit => "<|rating:explicit|>".to_string(),
         }
     }
+
+    fn is_special(tag: &str) -> bool {
+        tag.starts_with("<|rating:") && tag.ends_with("|>")
+    }
 }
 
 impl FromStr for RatingTag {
@@ -131,6 +144,10 @@ impl SpecialTag for IdentityTag {
             Self::Lax => "<|identity:lax|>".to_string(),
             Self::Strict => "<|identity:strict|>".to_string(),
         }
+    }
+
+    fn is_special(tag: &str) -> bool {
+        tag.starts_with("<|identity:") && tag.ends_with("|>")
     }
 }
 
@@ -172,6 +189,21 @@ impl SpecialTag for ReservedTag {
             Self::GeneralStart => "<general>".to_string(),
             Self::GeneralEnd => "</general>".to_string(),
             Self::InputEnd => "<|input_end|>".to_string(),
+        }
+    }
+
+    fn is_special(tag: &str) -> bool {
+        match tag {
+            "<|bos|>" => true,
+            "<|eos|>" => true,
+            "<copyright>" => true,
+            "</copyright>" => true,
+            "<character>" => true,
+            "</character>" => true,
+            "<general>" => true,
+            "</general>" => true,
+            "<|input_end|>" => true,
+            _ => false,
         }
     }
 }
