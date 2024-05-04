@@ -22,10 +22,6 @@ serde_json = "1.0.116"
 tokenizers = "0.19.1"
 pyo3 = { version = "0.21.2", features = ["extension-module"] }
 
-[target.'cfg(target_os = "linux")'.dependencies.openssl-sys]
-version = "0.9.102"
-features = ["vendored"]
-
 [features]
 default = []
 cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]

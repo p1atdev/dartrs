@@ -51,6 +51,8 @@ jobs:
       - name: Check openssl
         run: |
           dpkg -L libssl-dev
+          echo $PKG_CONFIG_PATH
+          ls $PKG_CONFIG_PATH
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
