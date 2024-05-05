@@ -38,11 +38,11 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
-          before-script-linux: "yum install openssl-devel devtoolset-10-libatomic-devel perl-IPC-Cmd -y"
+          before-script-linux: "yum install -y openssl-devel devtoolset-10-libatomic-devel perl-IPC-Cmd"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-linux-${{ matrix.target }}
           path: dist
 
   linux2:
@@ -63,11 +63,11 @@ jobs:
           args: --release --out dist -i python3.7 -i python3.8 -i python3.9 -i python3.10 -i python3.11 -i python3.12 
           sccache: 'true'
           manylinux: auto
-          before-script-linux: "apt-get update && apt-get install libssl-dev -y"
+          before-script-linux: "apt-get update && apt-get install -y libssl-dev musl-tools"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-linux-${{ matrix.target }}
           path: dist
 
   windows:
