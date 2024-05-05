@@ -25,17 +25,17 @@ jobs:
       matrix:
         platform:
           - runner: ubuntu-latest
-            target: x86_64
+            target: x86_64 # quay.io/pypa/manylinux_2_28_x86_64:latest (centos)
           - runner: ubuntu-latest
-            target: x86
+            target: x86 # quay.io/pypa/manylinux_2_24_i686:latest ? (centos)
           - runner: ubuntu-latest
-            target: aarch64
+            target: aarch64 # ghcr.io/rust-cross/manylinux_2_28-cross:aarch64 (ubuntu)
           - runner: ubuntu-latest
-            target: armv7
+            target: armv7 # ghcr.io/rust-cross/manylinux_2_28-cross:armv7 (ubuntu)
           - runner: ubuntu-latest
-            target: s390x
+            target: s390x # ghcr.io/rust-cross/manylinux_2_28-cross:s390x (ubuntu)
           - runner: ubuntu-latest
-            target: ppc64le
+            target: ppc64le # ghcr.io/rust-cross/manylinux_2_28-cross:ppc64le (ubuntu)
     steps:
       - uses: actions/checkout@v4
 
@@ -50,8 +50,13 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
-          before-script-linux: |
-            yum install -y openssl-devel 
+          before-script-linux: | # install the target is centos use yum, else use apt-get
+            if [ "${{ matrix.platform.target }}" = "x86_64" ] || [ "${{ matrix.platform.target }}" = "x86" ]; then
+              yum install -y openssl-devel
+            else
+              apt-get update
+              apt-get install -y libssl-dev
+            fi
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
