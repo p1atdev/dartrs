@@ -28,14 +28,14 @@ jobs:
             target: x86_64 # quay.io/pypa/manylinux_2_28_x86_64:latest (centos)
           - runner: ubuntu-latest
             target: x86 # quay.io/pypa/manylinux_2_24_i686:latest ? (centos)
-          - runner: ubuntu-latest
-            target: aarch64 # ghcr.io/rust-cross/manylinux_2_28-cross:aarch64 (ubuntu)
-          - runner: ubuntu-latest
-            target: armv7 # ghcr.io/rust-cross/manylinux_2_28-cross:armv7 (ubuntu)
-          - runner: ubuntu-latest
-            target: s390x # ghcr.io/rust-cross/manylinux_2_28-cross:s390x (ubuntu)
-          - runner: ubuntu-latest
-            target: ppc64le # ghcr.io/rust-cross/manylinux_2_28-cross:ppc64le (ubuntu)
+          # - runner: ubuntu-latest
+          #   target: aarch64 # ghcr.io/rust-cross/manylinux_2_28-cross:aarch64 (ubuntu)
+          # - runner: ubuntu-latest
+          #   target: armv7 # ghcr.io/rust-cross/manylinux_2_28-cross:armv7 (ubuntu)
+          # - runner: ubuntu-latest
+          #   target: s390x # ghcr.io/rust-cross/manylinux_2_28-cross:s390x (ubuntu)
+          # - runner: ubuntu-latest
+          #   target: ppc64le # ghcr.io/rust-cross/manylinux_2_28-cross:ppc64le (ubuntu)
     steps:
       - uses: actions/checkout@v4
 
@@ -52,15 +52,16 @@ jobs:
           manylinux: auto
           before-script-linux: | # install the target is centos use yum, else use apt-get
             if [ "${{ matrix.platform.target }}" = "x86_64" ] || [ "${{ matrix.platform.target }}" = "x86" ]; then
-              yum install -y openssl-devel
+              yum install -y openssl-devel devtoolset-10-libatomic-devel perl-IPC-Cmd
             else
               apt-get update
               apt-get install -y pkg-config libssl-dev build-essential
               dpkg -L libssl-dev # debug
             fi
-          docker-options: |
-            -e CI
-            -e OPENSSL_DIR=/usr
+          # docker-options: |
+          #   -e CI
+          #   -e OPENSSL_INCLUDE_DIR=/usr/include/openssl
+          #   -e OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
