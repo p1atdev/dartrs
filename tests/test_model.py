@@ -10,8 +10,8 @@ from random import randint
 
 
 def prepare_models():
-    model = MixtralModel.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-2")
-    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-2")
+    model = MixtralModel.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-8")
+    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-8")
 
     return model, tokenizer
 
@@ -195,3 +195,33 @@ def test_generate_different_prompt():
 
     assert results[0] != results[1]
     assert results[1] != results[2]
+
+
+def test_generate_with_ban_token_ids():
+    model, tokenizer = prepare_models()
+
+    prompt = compose_prompt(
+        prompt="1girl, solo, animal ears, animal ear fluff",
+        length="<|length:long|>",
+        identity="<|identity:none|>",
+        aspect_ratio="<|aspect_ratio:tall|>",
+        rating="<|rating:sfw|>",
+    )
+
+    ban_tags = "cat ears"
+    ban_token_ids = tokenizer.encode(ban_tags)
+
+    for index in range(0, 30):
+        config = get_generation_config(
+            prompt=prompt,
+            tokenizer=tokenizer,
+            seed=index,
+            ban_token_ids=ban_token_ids,
+            temperature=0.9,
+            top_p=0.9,
+            top_k=100,
+        )
+
+        result = model.generate(config)
+
+        assert "cat ears" not in result, result

@@ -1,11 +1,11 @@
 use anyhow::{Error as E, Result};
 
 use candle_core::{DType, Device, Tensor};
-use candle_transformers::generation::LogitsProcessor;
 use candle_transformers::generation::Sampling;
 use rand::Rng;
 use tokenizers::Tokenizer;
 
+use crate::logits_processor::DartLogitsProcessor;
 use crate::models::{mistral, mixtral};
 use crate::tags::ReservedTag;
 use crate::tags::SpecialTag;
@@ -34,7 +34,7 @@ impl GenerationCache {
 pub struct GenerationConfig {
     device: Device,
     tokenizer: Tokenizer,
-    logits_processor: LogitsProcessor,
+    logits_processor: DartLogitsProcessor,
     eos_token: u32,
     max_new_tokens: usize,
     prompt: String,
@@ -50,6 +50,7 @@ impl GenerationConfig {
         temperature: Option<f64>,
         top_p: Option<f64>,
         top_k: Option<usize>,
+        ban_token_ids: Option<Vec<u32>>,
         seed: Option<u64>,
     ) -> Self {
         let sampling = match top_k {
@@ -87,7 +88,7 @@ impl GenerationConfig {
                 rng.gen()
             }
         };
-        let logits_processor = LogitsProcessor::from_sampling(seed, sampling);
+        let logits_processor = DartLogitsProcessor::from_sampling(seed, sampling, ban_token_ids);
 
         let eos_token = eos_token.unwrap_or_else(|| tokenizer.token_to_id("<|eos|>").unwrap());
         let max_new_tokens = max_new_tokens.unwrap_or(256);
@@ -104,7 +105,7 @@ impl GenerationConfig {
 
     pub fn default(device: Device, tokenizer: Tokenizer, prompt: String) -> Self {
         Self::new(
-            device, tokenizer, prompt, None, None, None, None, None, None,
+            device, tokenizer, prompt, None, None, None, None, None, None, None,
         )
     }
 }

@@ -224,4 +224,32 @@ impl DartTokenizer {
 
         Ok(Self::new(tokenizer))
     }
+
+    fn encode(&self, text: String) -> PyResult<Vec<u32>> {
+        let encoding = self
+            .0
+            .encode(text, false) // add_special_tokens = false
+            .map_err(|e| exceptions::PyOSError::new_err(format!("Failed to encode text: {}", e)))?;
+        Ok(encoding.get_ids().to_vec())
+    }
+
+    fn decode_tags(
+        &self,
+        tokens: Vec<u32>,
+        skip_special_tokens: Option<bool>,
+    ) -> PyResult<Vec<String>> {
+        let skip_special_tokens = skip_special_tokens.unwrap_or(true);
+        let tags = tokens
+            .iter()
+            .map(|&token| self.0.decode(&[token], skip_special_tokens).unwrap())
+            .filter(|tag| !tag.is_empty())
+            .collect::<Vec<_>>();
+        Ok(tags)
+    }
+
+    fn decode(&self, tokens: Vec<u32>, skip_special_tokens: Option<bool>) -> PyResult<String> {
+        let tags = self.decode_tags(tokens, skip_special_tokens)?;
+        let decoded = tags.join(", ");
+        Ok(decoded)
+    }
 }
