@@ -49,8 +49,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # target: [x86_64, x86, aarch64, armv7, s390x, ppc64le]
-        target: [aarch64, armv7, s390x, ppc64le]
+        manylinux: [auto]
+        target: [armv7, s390x, ppc64le]
+        include:
+          - target: aarch64
+            manylinux: musllinux_1_1
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -62,7 +65,7 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist -i python3.7 -i python3.8 -i python3.9 -i python3.10 -i python3.11 -i python3.12 
           sccache: 'true'
-          manylinux: auto
+          manylinux: ${{ matrix.manylinux }}
           before-script-linux: "apt-get update && apt-get install -y libssl-dev musl-tools"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
