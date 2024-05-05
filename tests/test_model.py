@@ -1,22 +1,17 @@
 from dartrs.dartrs import (
-    DartDevice,
     DartTokenizer,
 )
 from dartrs.v2 import (
     MixtralModel,
-    GenerationConfig,
     compose_prompt,
-    LengthTag,
-    RatingTag,
-    AspectRatioTag,
-    IdentityTag,
 )
+from dartrs.utils import get_generation_config
 from random import randint
 
 
 def prepare_models():
-    model = MixtralModel.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-2")
-    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-2")
+    model = MixtralModel.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-8")
+    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-8")
 
     return model, tokenizer
 
@@ -27,7 +22,7 @@ def test_generate():
     prompt = compose_prompt(
         prompt="1girl, cat ears",
     )
-    config = GenerationConfig(
+    config = get_generation_config(
         prompt=prompt,
         tokenizer=tokenizer,
         seed=42,
@@ -47,7 +42,7 @@ def test_generate_different_seed():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=seed,
@@ -68,7 +63,7 @@ def test_generate_random_seed():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=seed,
@@ -88,7 +83,7 @@ def test_generate_same_seed():
     prompt = compose_prompt(
         prompt="1girl, cat ears",
     )
-    config = GenerationConfig(
+    config = get_generation_config(
         prompt=prompt,
         tokenizer=tokenizer,
         seed=seed,
@@ -110,7 +105,7 @@ def test_generate_different_temperature():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -134,7 +129,7 @@ def test_generate_different_top_p():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -158,7 +153,7 @@ def test_generate_different_top_k():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -190,7 +185,7 @@ def test_generate_different_prompt():
     results = []
 
     for prompt in prompts:
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -200,3 +195,33 @@ def test_generate_different_prompt():
 
     assert results[0] != results[1]
     assert results[1] != results[2]
+
+
+def test_generate_with_ban_token_ids():
+    model, tokenizer = prepare_models()
+
+    prompt = compose_prompt(
+        prompt="1girl, solo",
+        length="<|length:long|>",
+        identity="<|identity:none|>",
+        aspect_ratio="<|aspect_ratio:tall|>",
+        rating="<|rating:sfw|>",
+    )
+
+    ban_tags = "animal ear fluff, animal ears"
+    ban_token_ids = tokenizer.encode(ban_tags)
+
+    for index in range(0, 30):
+        config = get_generation_config(
+            prompt=prompt,
+            tokenizer=tokenizer,
+            seed=index,
+            ban_token_ids=ban_token_ids,
+            temperature=0.9,
+            top_p=0.9,
+            top_k=100,
+        )
+
+        result = model.generate(config)
+
+        assert "animal ears" not in result, result

@@ -22,6 +22,7 @@ class GenerationConfig:
         temperature: float | None = None,
         top_p: float | None = None,
         top_k: int | None = None,
+        ban_token_ids: list[int] | None = None,
         seed: int | None = None,
     ) -> None: ...
 
@@ -32,6 +33,7 @@ class DartV2Mistral:
         revision: str | None = None,
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
+        auth_token: str | None = None,
     ) -> None:
         raise NotImplementedError
 
@@ -45,6 +47,7 @@ class DartV2Mixtral:
         revision: str | None = None,
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
+        auth_token: str | None = None,
     ) -> None:
         raise NotImplementedError
 
@@ -55,8 +58,21 @@ class DartTokenizer:
     @staticmethod
     def from_pretrained(
         identifier,
-        revision=...,
+        revision: str | None = None,
+        auth_token: str | None = None,
     ) -> DartTokenizer: ...
+    def encode(self, text: str) -> list[int]: ...
+    def decode(
+        self, token_ids: list[int], skip_special_tokens: bool | None = None
+    ) -> str:
+        """Decodes tokens and returns a the concatenated text."""
+        ...
+
+    def decode_tags(
+        self, token_ids: list[int], skip_special_tokens: bool | None = None
+    ) -> list[str]:
+        """Decodes tokens and returns a list of tags."""
+        ...
 
 class SpecialTag(ABC):
     def __init__(self, tag: str) -> None: ...

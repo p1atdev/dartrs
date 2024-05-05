@@ -76,8 +76,9 @@ class MixtralModel(V2Model):
         revision: str | None = None,
         dtype: dartrs.DartDType = dartrs.DartDType.FP32,
         device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
+        auth_token: str | None = None,
     ) -> V2Model:
-        return cls(dartrs.DartV2Mixtral(hub_name, revision, dtype, device))
+        return cls(dartrs.DartV2Mixtral(hub_name, revision, dtype, device, auth_token))
 
 
 class MistralModel(V2Model):
@@ -88,5 +89,6 @@ class MistralModel(V2Model):
         revision: str | None = None,
         dtype: dartrs.DartDType = dartrs.DartDType.FP32,
         device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
+        auth_token: str | None = None,
     ) -> V2Model:
-        return cls(dartrs.DartV2Mistral(hub_name, revision, dtype, device))
+        return cls(dartrs.DartV2Mistral(hub_name, revision, dtype, device, auth_token))

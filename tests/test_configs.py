@@ -2,10 +2,13 @@ from dartrs.dartrs import (
     DartV2Mistral,
     DartV2Mixtral,
     DartDevice,
-    DartDType,
     DartTokenizer,
-    DartGenerationConfig,
+    GenerationConfig,
 )
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 def test_device():
@@ -23,7 +26,7 @@ def test_tokenizer():
 
 
 def test_generation_config():
-    config = DartGenerationConfig(
+    config = GenerationConfig(
         device=DartDevice.Cpu(),
         tokenizer=DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-2"),
         prompt="<|bos|><copyright></copyright><character></character><|rating:sfw|><|aspect_ratio:tall|><|length:long|><general>1girl<|identity:lax|><|input_end|>",
@@ -43,4 +46,13 @@ def test_mixtral_model():
     model_name = "p1atdev/dart-v2-mixtral-160m-sft-2"
 
     model = DartV2Mixtral(model_name)
+    assert model is not None
+
+
+def test_load_model_with_auth_token():
+    TEST_HF_TOKEN = os.getenv("TEST_HF_TOKEN")
+
+    model_name = "p1atdev/dart-v2-mixtral-160m-sft-2"
+    model = DartV2Mixtral(model_name, auth_token=TEST_HF_TOKEN)
+
     assert model is not None

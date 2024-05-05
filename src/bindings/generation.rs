@@ -16,6 +16,7 @@ pub struct DartGenerationConfig {
     temperature: Option<f64>,
     top_p: Option<f64>,
     top_k: Option<usize>,
+    ban_token_ids: Option<Vec<u32>>,
     seed: Option<u64>,
 }
 
@@ -30,6 +31,7 @@ impl From<DartGenerationConfig> for GenerationConfig {
             config.temperature,
             config.top_p,
             config.top_k,
+            config.ban_token_ids,
             config.seed,
         )
     }
@@ -47,6 +49,7 @@ impl DartGenerationConfig {
         temperature: Option<f64>,
         top_p: Option<f64>,
         top_k: Option<usize>,
+        ban_token_ids: Option<Vec<u32>>,
         seed: Option<u64>,
     ) -> Self {
         Self {
@@ -58,6 +61,7 @@ impl DartGenerationConfig {
             temperature,
             top_p,
             top_k,
+            ban_token_ids,
             seed,
         }
     }

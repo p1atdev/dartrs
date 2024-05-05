@@ -5,7 +5,7 @@ use crate::models::{
 };
 
 use candle_core::{DType, Device};
-use hf_hub::api::sync::{Api, ApiBuilder};
+use hf_hub::api::sync::ApiBuilder;
 use hf_hub::Repo;
 use hf_hub::RepoType;
 use tokenizers::Tokenizer;
@@ -67,8 +67,11 @@ impl DartV2Mistral {
         revision: Option<String>,
         dtype: Option<DartDType>,
         device: Option<DartDevice>,
+        auth_token: Option<String>,
     ) -> PyResult<Self> {
-        let api = match ApiBuilder::default().build() {
+        let builder = ApiBuilder::default();
+        let builder = builder.with_token(auth_token);
+        let api = match builder.build() {
             Ok(api) => api,
             Err(e) => {
                 return Err(exceptions::PyOSError::new_err(format!(
@@ -123,8 +126,11 @@ impl DartV2Mixtral {
         revision: Option<String>,
         dtype: Option<DartDType>,
         device: Option<DartDevice>,
+        auth_token: Option<String>,
     ) -> PyResult<Self> {
-        let api = match ApiBuilder::default().build() {
+        let builder = ApiBuilder::default();
+        let builder = builder.with_token(auth_token);
+        let api = match builder.build() {
             Ok(api) => api,
             Err(e) => {
                 return Err(exceptions::PyOSError::new_err(format!(
@@ -181,9 +187,15 @@ impl From<DartTokenizer> for Tokenizer {
 #[pymethods]
 impl DartTokenizer {
     #[staticmethod]
-    #[pyo3(signature = (identifier, revision = String::from("main")))]
-    fn from_pretrained(identifier: &str, revision: String) -> PyResult<Self> {
-        let api = match Api::new() {
+    #[pyo3(signature = (identifier, revision = String::from("main"), auth_token = None))]
+    fn from_pretrained(
+        identifier: &str,
+        revision: String,
+        auth_token: Option<String>,
+    ) -> PyResult<Self> {
+        let builder = ApiBuilder::default();
+        let builder = builder.with_token(auth_token);
+        let api = match builder.build() {
             Ok(api) => api,
             Err(e) => {
                 return Err(exceptions::PyOSError::new_err(format!(
@@ -211,5 +223,33 @@ impl DartTokenizer {
         })?;
 
         Ok(Self::new(tokenizer))
+    }
+
+    fn encode(&self, text: String) -> PyResult<Vec<u32>> {
+        let encoding = self
+            .0
+            .encode(text, false) // add_special_tokens = false
+            .map_err(|e| exceptions::PyOSError::new_err(format!("Failed to encode text: {}", e)))?;
+        Ok(encoding.get_ids().to_vec())
+    }
+
+    fn decode_tags(
+        &self,
+        tokens: Vec<u32>,
+        skip_special_tokens: Option<bool>,
+    ) -> PyResult<Vec<String>> {
+        let skip_special_tokens = skip_special_tokens.unwrap_or(true);
+        let tags = tokens
+            .iter()
+            .map(|&token| self.0.decode(&[token], skip_special_tokens).unwrap())
+            .filter(|tag| !tag.is_empty())
+            .collect::<Vec<_>>();
+        Ok(tags)
+    }
+
+    fn decode(&self, tokens: Vec<u32>, skip_special_tokens: Option<bool>) -> PyResult<String> {
+        let tags = self.decode_tags(tokens, skip_special_tokens)?;
+        let decoded = tags.join(", ");
+        Ok(decoded)
     }
 }

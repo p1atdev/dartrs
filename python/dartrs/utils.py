@@ -10,6 +10,7 @@ def get_generation_config(
     temperature: float | None = 1.0,
     top_p: float | None = 1.0,
     top_k: int | None = 100,
+    ban_token_ids: list[int] | None = None,
     seed: int | None = None,
 ) -> dartrs.GenerationConfig:
     return dartrs.GenerationConfig(
@@ -21,5 +22,6 @@ def get_generation_config(
         temperature=temperature,
         top_p=top_p,
         top_k=top_k,
+        ban_token_ids=ban_token_ids,
         seed=seed,
     )
