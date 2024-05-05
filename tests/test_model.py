@@ -201,14 +201,14 @@ def test_generate_with_ban_token_ids():
     model, tokenizer = prepare_models()
 
     prompt = compose_prompt(
-        prompt="1girl, solo, animal ears, animal ear fluff",
+        prompt="1girl, solo",
         length="<|length:long|>",
         identity="<|identity:none|>",
         aspect_ratio="<|aspect_ratio:tall|>",
         rating="<|rating:sfw|>",
     )
 
-    ban_tags = "cat ears"
+    ban_tags = "animal ear fluff, animal ears"
     ban_token_ids = tokenizer.encode(ban_tags)
 
     for index in range(0, 30):
@@ -224,4 +224,4 @@ def test_generate_with_ban_token_ids():
 
         result = model.generate(config)
 
-        assert "cat ears" not in result, result
+        assert "animal ears" not in result, result
