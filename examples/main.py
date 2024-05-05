@@ -2,10 +2,6 @@ from dartrs.dartrs import DartDevice, DartTokenizer, GenerationConfig
 from dartrs.utils import get_generation_config
 from dartrs.v2 import (
     compose_prompt,
-    LengthTag,
-    RatingTag,
-    AspectRatioTag,
-    IdentityTag,
     MixtralModel,
     V2Model,
 )
@@ -40,10 +36,10 @@ def main():
             prompt=compose_prompt(
                 copyright="",
                 character="",
-                rating=RatingTag.Sfw,
-                aspect_ratio=AspectRatioTag.Tall,
-                length=LengthTag.Long,
-                identity_level=IdentityTag.Free,
+                rating="<|rating:general|>",
+                aspect_ratio="<|aspect_ratio:tall|>",
+                length="<|length:medium|>",
+                identity="<|identity:none|>",
                 prompt="1girl, cat ears",
             ),
             tokenizer=tokenizer,

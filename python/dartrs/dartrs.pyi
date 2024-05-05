@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 class DartDType:
     BF16: ...
@@ -59,7 +59,7 @@ class DartTokenizer:
     ) -> DartTokenizer: ...
 
 class SpecialTag(ABC):
-    @abstractmethod
+    def __init__(self, tag: str) -> None: ...
     def to_tag(self) -> str: ...
 
 class LengthTag(SpecialTag):

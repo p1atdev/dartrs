@@ -1,55 +1,56 @@
-from enum import Enum
+from typing import Literal
 
 from . import dartrs
 
 
-class LengthTag(Enum):
-    VeryLong = dartrs.LengthTag.VeryLong
-    Long = dartrs.LengthTag.Long
-    Medium = dartrs.LengthTag.Medium
-    Short = dartrs.LengthTag.Short
-    VeryShort = dartrs.LengthTag.VeryShort
+LengthTag = (
+    Literal["<|length:very_short|>"]
+    | Literal["<|length:short|>"]
+    | Literal["<|length:medium|>"]
+    | Literal["<|length:long|>"]
+    | Literal["<|length:very_long|>"]
+)
 
+AspectRatioTag = (
+    Literal["<|aspect_ratio:ultra_wide|>"]
+    | Literal["<|aspect_ratio:wide|>"]
+    | Literal["<|aspect_ratio:square|>"]
+    | Literal["<|aspect_ratio:tall|>"]
+    | Literal["<|aspect_ratio:ultra_tall|>"]
+)
 
-class AspectRatioTag(Enum):
-    UltraWide = dartrs.AspectRatioTag.UltraWide
-    Wide = dartrs.AspectRatioTag.Wide
-    Square = dartrs.AspectRatioTag.Square
-    Tall = dartrs.AspectRatioTag.Tall
-    UltraTall = dartrs.AspectRatioTag.UltraTall
+RatingTag = (
+    Literal["<|rating:sfw|>"]
+    | Literal["<|rating:general|>"]
+    | Literal["<|rating:sensitive|>"]
+    | Literal["<|rating:nsfw|>"]
+    | Literal["<|rating:questionable|>"]
+    | Literal["<|rating:explicit|>"]
+)
 
-
-class RatingTag(Enum):
-    Sfw = dartrs.RatingTag.Sfw
-    General = dartrs.RatingTag.General
-    Sensitive = dartrs.RatingTag.Sensitive
-    Nsfw = dartrs.RatingTag.Nsfw
-    Questionable = dartrs.RatingTag.Questionable
-    Explicit = dartrs.RatingTag.Explicit
-
-
-class IdentityTag(Enum):
-    Free = dartrs.IdentityTag.Free
-    Lax = dartrs.IdentityTag.Lax
-    Strict = dartrs.IdentityTag.Strict
+IdentityTag = (
+    Literal["<|identity:none|>"]
+    | Literal["<|identity:lax|>"]
+    | Literal["<|identity:strict|>"]
+)
 
 
 def compose_prompt(
     prompt: str = "",
     copyright: str = "",
     character: str = "",
-    rating: RatingTag = RatingTag.Sfw,
-    aspect_ratio: AspectRatioTag = AspectRatioTag.Tall,
-    length: LengthTag = LengthTag.Long,
-    identity_level: IdentityTag = IdentityTag.Lax,
+    rating: RatingTag = "<|rating:general|>",
+    aspect_ratio: AspectRatioTag = "<|aspect_ratio:tall|>",
+    length: LengthTag = "<|length:medium|>",
+    identity: IdentityTag = "<|identity:none|>",
 ):
     return dartrs.compose_prompt_v2(
         copyright=copyright,
         character=character,
-        rating=rating.value,
-        aspect_ratio=aspect_ratio.value,
-        length=length.value,
-        identity_level=identity_level.value,
+        rating=dartrs.RatingTag(rating),
+        aspect_ratio=dartrs.AspectRatioTag(aspect_ratio),
+        length=dartrs.LengthTag(length),
+        identity_level=dartrs.IdentityTag(identity),
         prompt=prompt,
     )
 
