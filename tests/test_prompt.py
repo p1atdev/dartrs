@@ -27,10 +27,10 @@ def test_compose_prompt_v2_wrapper():
         prompt="1girl, cat ears",
         copyright="vocaloid",
         character="hatsune miku",
-        rating=v2.RatingTag.Sfw,
-        aspect_ratio=v2.AspectRatioTag.Tall,
-        length=v2.LengthTag.Long,
-        identity_level=v2.IdentityTag.Lax,
+        rating="<|rating:sfw|>",
+        aspect_ratio="<|aspect_ratio:tall|>",
+        length="<|length:long|>",
+        identity="<|identity:lax|>",
     )
 
     assert prompt is not None

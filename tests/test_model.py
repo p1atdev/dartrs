@@ -1,16 +1,11 @@
 from dartrs.dartrs import (
-    DartDevice,
     DartTokenizer,
 )
 from dartrs.v2 import (
     MixtralModel,
-    GenerationConfig,
     compose_prompt,
-    LengthTag,
-    RatingTag,
-    AspectRatioTag,
-    IdentityTag,
 )
+from dartrs.utils import get_generation_config
 from random import randint
 
 
@@ -27,7 +22,7 @@ def test_generate():
     prompt = compose_prompt(
         prompt="1girl, cat ears",
     )
-    config = GenerationConfig(
+    config = get_generation_config(
         prompt=prompt,
         tokenizer=tokenizer,
         seed=42,
@@ -47,7 +42,7 @@ def test_generate_different_seed():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=seed,
@@ -68,7 +63,7 @@ def test_generate_random_seed():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=seed,
@@ -88,7 +83,7 @@ def test_generate_same_seed():
     prompt = compose_prompt(
         prompt="1girl, cat ears",
     )
-    config = GenerationConfig(
+    config = get_generation_config(
         prompt=prompt,
         tokenizer=tokenizer,
         seed=seed,
@@ -110,7 +105,7 @@ def test_generate_different_temperature():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -134,7 +129,7 @@ def test_generate_different_top_p():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -158,7 +153,7 @@ def test_generate_different_top_k():
         prompt = compose_prompt(
             prompt="1girl, cat ears",
         )
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,
@@ -190,7 +185,7 @@ def test_generate_different_prompt():
     results = []
 
     for prompt in prompts:
-        config = GenerationConfig(
+        config = get_generation_config(
             prompt=prompt,
             tokenizer=tokenizer,
             seed=42,

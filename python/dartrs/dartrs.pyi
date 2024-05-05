@@ -32,6 +32,7 @@ class DartV2Mistral:
         revision: str | None = None,
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
+        auth_token: str | None = None,
     ) -> None:
         raise NotImplementedError
 
@@ -45,6 +46,7 @@ class DartV2Mixtral:
         revision: str | None = None,
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
+        auth_token: str | None = None,
     ) -> None:
         raise NotImplementedError
 
@@ -55,7 +57,8 @@ class DartTokenizer:
     @staticmethod
     def from_pretrained(
         identifier,
-        revision=...,
+        revision: str | None = None,
+        auth_token: str | None = None,
     ) -> DartTokenizer: ...
 
 class SpecialTag(ABC):
