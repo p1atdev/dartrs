@@ -22,6 +22,18 @@ serde_json = "1.0.116"
 tokenizers = "0.19.1"
 pyo3 = { version = "0.21.2", features = ["extension-module"] }
 
+
+# https://github.com/cross-rs/cross/wiki/Recipes#openssl
+[target.x86_64-unknown-linux-gnu]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt-get update && apt-get install --assume-yes libssl-dev:$CROSS_DEB_ARCH",
+]
+
+[target.'cfg(target_os = "linux")'.dependencies]
+openssl = { version = "*", features = ["vendored"] }
+
+
 [features]
 default = []
 cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
