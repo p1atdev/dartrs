@@ -1,6 +1,4 @@
-from dartrs.dartrs import (
-    DartTokenizer,
-)
+from dartrs.dartrs import DartTokenizer, GenerationCache
 from dartrs.v2 import (
     MixtralModel,
     compose_prompt,
@@ -202,10 +200,10 @@ def test_generate_with_ban_token_ids():
 
     prompt = compose_prompt(
         prompt="1girl, solo",
-        length="<|length:long|>",
-        identity="<|identity:none|>",
-        aspect_ratio="<|aspect_ratio:tall|>",
-        rating="<|rating:sfw|>",
+        length="long",
+        identity="none",
+        aspect_ratio="tall",
+        rating="sfw",
     )
 
     ban_tags = "animal ear fluff, animal ears"
@@ -225,3 +223,43 @@ def test_generate_with_ban_token_ids():
         result = model.generate(config)
 
         assert "animal ears" not in result, result
+
+
+def test_generate_next_token():
+    model, tokenizer = prepare_models()
+
+    prompt = compose_prompt(
+        prompt="1girl, cat ears",
+    )
+    config = get_generation_config(
+        prompt=prompt,
+        tokenizer=tokenizer,
+        seed=42,
+    )
+
+    tokens = tokenizer.encode(prompt)
+    cache = GenerationCache(tokens)
+
+    for _ in range(0, 10):
+        token, cache = model._get_next_token(config, cache)
+
+        assert token is not None
+        assert token > 0
+
+
+def test_generate_stream():
+    model, tokenizer = prepare_models()
+
+    prompt = compose_prompt(
+        prompt="1girl, cat ears",
+        length="long",
+    )
+    config = get_generation_config(
+        prompt=prompt,
+        tokenizer=tokenizer,
+        seed=42,
+    )
+
+    for tag in model.generate_stream(config):
+        assert tag is not None
+        assert isinstance(tag, str)

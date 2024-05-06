@@ -1,5 +1,5 @@
-use crate::bindings::generation::DartGenerationConfig;
-use crate::generation::{GenerationConfig, TextGeneration};
+use crate::bindings::generation::{DartGenerationCache, DartGenerationConfig};
+use crate::generation::{GenerationCache, GenerationConfig, TextGeneration};
 use crate::models::{
     mistral, mixtral, MistralModelBuilder, MixtralModelBuilder, ModelBuilder, ModelRepositoy,
 };
@@ -50,12 +50,33 @@ impl From<DartDevice> for Device {
     }
 }
 
+// #[pyclass]
+// #[derive(Debug, Clone)]
+// pub(crate) struct NextToken {
+//     pub token: u32,
+//     pub cache: DartGenerationCache,
+// }
+
+macro_rules! generate {
+    ($self:ident, $config:ident) => {
+        match $self.model.generate(&mut $config) {
+            Ok(text) => Ok(text),
+            Err(e) => Err(exceptions::PyOSError::new_err(format!(
+                "Failed to generate text: {}",
+                e
+            ))),
+        }
+    };
+}
+
 #[pyclass]
-pub(crate) struct DartV2Mistral(mistral::Model);
+pub(crate) struct DartV2Mistral {
+    model: mistral::Model,
+}
 
 impl From<mistral::Model> for DartV2Mistral {
     fn from(model: mistral::Model) -> Self {
-        Self(model)
+        Self { model }
     }
 }
 
@@ -89,7 +110,7 @@ impl DartV2Mistral {
 
         let model = MistralModelBuilder::load(&repo, dtype, &device);
         match model {
-            Ok(model) => Ok(Self(model)),
+            Ok(model) => Ok(Self { model }),
             Err(e) => Err(exceptions::PyOSError::new_err(format!(
                 "Failed to load model: {}",
                 e
@@ -99,22 +120,38 @@ impl DartV2Mistral {
 
     fn generate(&mut self, config: DartGenerationConfig) -> PyResult<String> {
         let mut config = GenerationConfig::from(config);
-        match self.0.generate(&mut config) {
-            Ok(text) => Ok(text),
+        generate!(self, config)
+    }
+
+    fn get_next_token(
+        &mut self,
+        config: DartGenerationConfig,
+        cache: DartGenerationCache,
+    ) -> PyResult<(u32, DartGenerationCache)> {
+        let mut config = GenerationConfig::from(config);
+        let mut cache = GenerationCache::from(cache);
+        match self.model.get_next_token(&mut config, &mut cache) {
+            Ok(token) => Ok((token, DartGenerationCache::from(cache))),
             Err(e) => Err(exceptions::PyOSError::new_err(format!(
-                "Failed to generate text: {}",
+                "Failed to get next token: {}",
                 e
             ))),
         }
     }
+
+    fn _clear_kv_cache(&mut self) {
+        self.model.clear_kv_cache();
+    }
 }
 
 #[pyclass]
-pub(crate) struct DartV2Mixtral(mixtral::Model);
+pub(crate) struct DartV2Mixtral {
+    model: mixtral::Model,
+}
 
 impl From<mixtral::Model> for DartV2Mixtral {
     fn from(model: mixtral::Model) -> Self {
-        Self(model)
+        Self { model }
     }
 }
 
@@ -148,7 +185,7 @@ impl DartV2Mixtral {
 
         let model = MixtralModelBuilder::load(&repo, dtype, &device);
         match model {
-            Ok(model) => Ok(Self(model)),
+            Ok(model) => Ok(Self { model }),
             Err(e) => Err(exceptions::PyOSError::new_err(format!(
                 "Failed to load model: {}",
                 e
@@ -158,29 +195,45 @@ impl DartV2Mixtral {
 
     fn generate(&mut self, config: DartGenerationConfig) -> PyResult<String> {
         let mut config = GenerationConfig::from(config);
-        match self.0.generate(&mut config) {
-            Ok(text) => Ok(text),
+        generate!(self, config)
+    }
+
+    fn get_next_token(
+        &mut self,
+        config: DartGenerationConfig,
+        cache: DartGenerationCache,
+    ) -> PyResult<(u32, DartGenerationCache)> {
+        let mut config = GenerationConfig::from(config);
+        let mut cache = GenerationCache::from(cache);
+        match self.model.get_next_token(&mut config, &mut cache) {
+            Ok(token) => Ok((token, DartGenerationCache::from(cache))),
             Err(e) => Err(exceptions::PyOSError::new_err(format!(
-                "Failed to generate text: {}",
+                "Failed to get next token: {}",
                 e
             ))),
         }
+    }
+
+    fn _clear_kv_cache(&mut self) {
+        self.model.clear_kv_cache();
     }
 }
 
 #[pyclass]
 #[derive(Debug, Clone)]
-pub(crate) struct DartTokenizer(Tokenizer);
+pub(crate) struct DartTokenizer {
+    pub tokenizer: Tokenizer,
+}
 
 impl DartTokenizer {
     fn new(tokenizer: Tokenizer) -> Self {
-        Self(tokenizer)
+        Self { tokenizer }
     }
 }
 
 impl From<DartTokenizer> for Tokenizer {
     fn from(tokenizer: DartTokenizer) -> Self {
-        tokenizer.0
+        tokenizer.tokenizer
     }
 }
 
@@ -227,7 +280,7 @@ impl DartTokenizer {
 
     fn encode(&self, text: String) -> PyResult<Vec<u32>> {
         let encoding = self
-            .0
+            .tokenizer
             .encode(text, false) // add_special_tokens = false
             .map_err(|e| exceptions::PyOSError::new_err(format!("Failed to encode text: {}", e)))?;
         Ok(encoding.get_ids().to_vec())
@@ -241,7 +294,11 @@ impl DartTokenizer {
         let skip_special_tokens = skip_special_tokens.unwrap_or(true);
         let tags = tokens
             .iter()
-            .map(|&token| self.0.decode(&[token], skip_special_tokens).unwrap())
+            .map(|&token| {
+                self.tokenizer
+                    .decode(&[token], skip_special_tokens)
+                    .unwrap()
+            })
             .filter(|tag| !tag.is_empty())
             .collect::<Vec<_>>();
         Ok(tags)
@@ -251,5 +308,13 @@ impl DartTokenizer {
         let tags = self.decode_tags(tokens, skip_special_tokens)?;
         let decoded = tags.join(", ");
         Ok(decoded)
+    }
+
+    fn tokenize(&self, text: String) -> PyResult<Vec<String>> {
+        let tokens = self.tokenizer.encode(text, false).map_err(|e| {
+            exceptions::PyOSError::new_err(format!("Failed to tokenize text: {}", e))
+        })?;
+
+        Ok(tokens.get_tokens().to_vec())
     }
 }

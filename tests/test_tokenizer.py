@@ -51,3 +51,13 @@ def test_decode_tags_text_with_special_tokens():
 
     assert decoded is not None
     assert decoded == ["1girl", "cat ears", "</general>", "<|eos|>"]
+
+
+def test_tokenize_text():
+    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-2")
+
+    text = "1girl, cat ears, hogeeee"
+    tokens = tokenizer.tokenize(text)
+
+    assert tokens is not None
+    assert tokens == ["1girl", "cat ears", "<|unk|>"]

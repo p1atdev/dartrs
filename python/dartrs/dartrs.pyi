@@ -25,6 +25,15 @@ class GenerationConfig:
         ban_token_ids: list[int] | None = None,
         seed: int | None = None,
     ) -> None: ...
+    def tokenizer(self) -> DartTokenizer: ...
+    def prompt(self) -> str: ...
+    def max_new_tokens(self) -> int: ...
+
+class GenerationCache:
+    def __init__(self, input_tokens: list[int]) -> None: ...
+    def input_tokens(self) -> list[int]: ...
+    def output_tokens(self) -> list[int]: ...
+    def finished(self) -> bool: ...
 
 class DartV2Mistral:
     def __init__(
@@ -34,11 +43,16 @@ class DartV2Mistral:
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
         auth_token: str | None = None,
-    ) -> None:
-        raise NotImplementedError
-
+    ) -> None: ...
     def generate(self, config: GenerationConfig) -> str:
         raise NotImplementedError
+
+    def get_next_token(
+        self,
+        config: GenerationConfig,
+        cache: GenerationCache,
+    ) -> tuple[int, GenerationCache]: ...
+    def _clear_kv_cache(self) -> None: ...
 
 class DartV2Mixtral:
     def __init__(
@@ -48,11 +62,16 @@ class DartV2Mixtral:
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
         auth_token: str | None = None,
-    ) -> None:
-        raise NotImplementedError
-
+    ) -> None: ...
     def generate(self, config: GenerationConfig) -> str:
         raise NotImplementedError
+
+    def get_next_token(
+        self,
+        config: GenerationConfig,
+        cache: GenerationCache,
+    ) -> tuple[int, GenerationCache]: ...
+    def _clear_kv_cache(self) -> None: ...
 
 class DartTokenizer:
     @staticmethod
@@ -74,25 +93,29 @@ class DartTokenizer:
         """Decodes tokens and returns a list of tags."""
         ...
 
-class SpecialTag(ABC):
+    def tokenize(self, text: str) -> list[str]:
+        """Tokenizes text and returns a list of tokens."""
+        ...
+
+class Tag(ABC):
     def __init__(self, tag: str) -> None: ...
     def to_tag(self) -> str: ...
 
-class LengthTag(SpecialTag):
+class LengthTag(Tag):
     VeryShort: LengthTag
     Short: LengthTag
     Medium: LengthTag
     Long: LengthTag
     VeryLong: LengthTag
 
-class AspectRatioTag(SpecialTag):
+class AspectRatioTag(Tag):
     UltraWide: AspectRatioTag
     Wide: AspectRatioTag
     Square: AspectRatioTag
     Tall: AspectRatioTag
     UltraTall: AspectRatioTag
 
-class RatingTag(SpecialTag):
+class RatingTag(Tag):
     Sfw: RatingTag
     General: RatingTag
     Sensitive: RatingTag
@@ -100,10 +123,21 @@ class RatingTag(SpecialTag):
     Questionable: RatingTag
     Explicit: RatingTag
 
-class IdentityTag(SpecialTag):
+class IdentityTag(Tag):
     Free: IdentityTag
     Lax: IdentityTag
     Strict: IdentityTag
+
+class SpecialTag(Tag):
+    Bos: SpecialTag
+    Eos: SpecialTag
+    CopyrightStart: SpecialTag
+    CopyrightEnd: SpecialTag
+    CharacterStart: SpecialTag
+    CharacterEnd: SpecialTag
+    GeneralStart: SpecialTag
+    GeneralEnd: SpecialTag
+    InputEnd: SpecialTag
 
 def compose_prompt_v2(
     copyright: str,
@@ -113,4 +147,5 @@ def compose_prompt_v2(
     length: LengthTag,
     identity_level: IdentityTag,
     prompt: str,
+    do_completion: bool,
 ) -> str: ...

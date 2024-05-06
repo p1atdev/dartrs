@@ -1,4 +1,4 @@
-use crate::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag, ReservedTag, SpecialTag};
+use crate::tags::{AspectRatioTag, IdentityTag, LengthTag, RatingTag, SpecialTag, Tag};
 
 use pyo3::exceptions;
 use pyo3::prelude::*;
@@ -166,9 +166,9 @@ impl DartIdentityTag {
     }
 }
 
-#[pyclass(name = "ReservedTag")]
+#[pyclass(name = "SpecialTag")]
 #[derive(Debug, Clone)]
-pub enum DartReservedTag {
+pub enum DartSpecialTag {
     Bos,
     Eos,
     CopyrightStart,
@@ -180,41 +180,41 @@ pub enum DartReservedTag {
     InputEnd,
 }
 
-impl From<DartReservedTag> for ReservedTag {
-    fn from(tag: DartReservedTag) -> Self {
+impl From<DartSpecialTag> for SpecialTag {
+    fn from(tag: DartSpecialTag) -> Self {
         match tag {
-            DartReservedTag::Bos => ReservedTag::Bos,
-            DartReservedTag::Eos => ReservedTag::Eos,
-            DartReservedTag::CopyrightStart => ReservedTag::CopyrightStart,
-            DartReservedTag::CopyrightEnd => ReservedTag::CopyrightEnd,
-            DartReservedTag::CharacterStart => ReservedTag::CharacterStart,
-            DartReservedTag::CharacterEnd => ReservedTag::CharacterEnd,
-            DartReservedTag::GeneralStart => ReservedTag::GeneralStart,
-            DartReservedTag::GeneralEnd => ReservedTag::GeneralEnd,
-            DartReservedTag::InputEnd => ReservedTag::InputEnd,
+            DartSpecialTag::Bos => SpecialTag::Bos,
+            DartSpecialTag::Eos => SpecialTag::Eos,
+            DartSpecialTag::CopyrightStart => SpecialTag::CopyrightStart,
+            DartSpecialTag::CopyrightEnd => SpecialTag::CopyrightEnd,
+            DartSpecialTag::CharacterStart => SpecialTag::CharacterStart,
+            DartSpecialTag::CharacterEnd => SpecialTag::CharacterEnd,
+            DartSpecialTag::GeneralStart => SpecialTag::GeneralStart,
+            DartSpecialTag::GeneralEnd => SpecialTag::GeneralEnd,
+            DartSpecialTag::InputEnd => SpecialTag::InputEnd,
         }
     }
 }
 
 #[pymethods]
-impl DartReservedTag {
+impl DartSpecialTag {
     #[new]
     fn new(tag: &str) -> PyResult<Self> {
         match tag {
-            "<|bos|>" => Ok(DartReservedTag::Bos),
-            "<|eos|>" => Ok(DartReservedTag::Eos),
-            "<copyright>" => Ok(DartReservedTag::CopyrightStart),
-            "</copyright>" => Ok(DartReservedTag::CopyrightEnd),
-            "<character>" => Ok(DartReservedTag::CharacterStart),
-            "</character>" => Ok(DartReservedTag::CharacterEnd),
-            "<general>" => Ok(DartReservedTag::GeneralStart),
-            "</general>" => Ok(DartReservedTag::GeneralEnd),
-            "<|input_end|>" => Ok(DartReservedTag::InputEnd),
+            "<|bos|>" => Ok(DartSpecialTag::Bos),
+            "<|eos|>" => Ok(DartSpecialTag::Eos),
+            "<copyright>" => Ok(DartSpecialTag::CopyrightStart),
+            "</copyright>" => Ok(DartSpecialTag::CopyrightEnd),
+            "<character>" => Ok(DartSpecialTag::CharacterStart),
+            "</character>" => Ok(DartSpecialTag::CharacterEnd),
+            "<general>" => Ok(DartSpecialTag::GeneralStart),
+            "</general>" => Ok(DartSpecialTag::GeneralEnd),
+            "<|input_end|>" => Ok(DartSpecialTag::InputEnd),
             _ => Err(exceptions::PyValueError::new_err("invalid reserved tag")),
         }
     }
 
     fn to_tag(&self) -> String {
-        ReservedTag::from(self.clone()).to_tag()
+        SpecialTag::from(self.clone()).to_tag()
     }
 }

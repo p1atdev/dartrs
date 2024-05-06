@@ -2,7 +2,7 @@ use anyhow::{Error as E, Result};
 use std::fmt;
 use std::str::FromStr;
 
-pub trait SpecialTag {
+pub trait Tag {
     fn to_tag(&self) -> String;
     fn is_special(tag: &str) -> bool;
 }
@@ -16,7 +16,7 @@ pub enum LengthTag {
     VeryLong,
 }
 
-impl SpecialTag for LengthTag {
+impl Tag for LengthTag {
     fn to_tag(&self) -> String {
         match self {
             Self::VeryShort => "<|length:very_short|>".to_string(),
@@ -56,7 +56,7 @@ pub enum AspectRatioTag {
     UltraTall,
 }
 
-impl SpecialTag for AspectRatioTag {
+impl Tag for AspectRatioTag {
     fn to_tag(&self) -> String {
         match self {
             Self::UltraWide => "<|aspect_ratio:ultra_wide|>".to_string(),
@@ -97,7 +97,7 @@ pub enum RatingTag {
     Explicit,
 }
 
-impl SpecialTag for RatingTag {
+impl Tag for RatingTag {
     fn to_tag(&self) -> String {
         match self {
             Self::Sfw => "<|rating:sfw|>".to_string(),
@@ -137,7 +137,7 @@ pub enum IdentityTag {
     Strict,
 }
 
-impl SpecialTag for IdentityTag {
+impl Tag for IdentityTag {
     fn to_tag(&self) -> String {
         match self {
             Self::None => "<|identity:none|>".to_string(),
@@ -165,7 +165,7 @@ impl FromStr for IdentityTag {
 }
 
 #[derive(Debug, Clone)]
-pub enum ReservedTag {
+pub enum SpecialTag {
     Bos,
     Eos,
     CopyrightStart,
@@ -177,7 +177,7 @@ pub enum ReservedTag {
     InputEnd,
 }
 
-impl SpecialTag for ReservedTag {
+impl Tag for SpecialTag {
     fn to_tag(&self) -> String {
         match self {
             Self::Bos => "<|bos|>".to_string(),
@@ -208,7 +208,7 @@ impl SpecialTag for ReservedTag {
     }
 }
 
-impl fmt::Display for ReservedTag {
+impl fmt::Display for SpecialTag {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = self.to_tag();
         write!(f, "{}", s)

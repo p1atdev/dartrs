@@ -21,11 +21,12 @@ fn dartrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DartV2Mixtral>()?;
     m.add_class::<DartTokenizer>()?;
     m.add_class::<DartGenerationConfig>()?;
+    m.add_class::<DartGenerationCache>()?;
     m.add_class::<DartLengthTag>()?;
     m.add_class::<DartAspectRatioTag>()?;
     m.add_class::<DartRatingTag>()?;
     m.add_class::<DartIdentityTag>()?;
-    m.add_class::<DartReservedTag>()?;
+    m.add_class::<DartSpecialTag>()?;
     m.add_function(wrap_pyfunction!(dart_compose_prompt_v2, m)?)?;
 
     Ok(())

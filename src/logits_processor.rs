@@ -1,4 +1,4 @@
-use candle_core::{DType, Error, Result, Tensor};
+use candle_core::{Result, Tensor};
 use candle_transformers::generation::{LogitsProcessor, Sampling};
 
 pub struct DartLogitsProcessor {

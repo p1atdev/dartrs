@@ -1,4 +1,4 @@
-from dartrs.dartrs import DartDevice, DartTokenizer, GenerationConfig
+from dartrs.dartrs import DartTokenizer, GenerationConfig
 from dartrs.utils import get_generation_config
 from dartrs.v2 import (
     compose_prompt,
@@ -6,6 +6,7 @@ from dartrs.v2 import (
     V2Model,
 )
 import time
+import os
 
 MODEL_NAME = "p1atdev/dart-v2-mixtral-160m-sft-8"
 
@@ -26,6 +27,18 @@ def generate(model: V2Model, config: GenerationConfig):
     print(f"Time taken: {end - start:.2f}s")
 
 
+def generate_stream(model: V2Model, config: GenerationConfig):
+    start = time.time()
+    for tag in model.generate_stream(config):
+        if tag.strip() == "":
+            continue
+        os.write(1, tag.encode("utf-8") + b", ")
+    end = time.time()
+
+    print()
+    print(f"Time taken: {end - start:.2f}s")
+
+
 def main():
     model, tokenizer = prepare_models()
 
@@ -36,10 +49,10 @@ def main():
             prompt=compose_prompt(
                 copyright="",
                 character="",
-                rating="<|rating:general|>",
-                aspect_ratio="<|aspect_ratio:tall|>",
-                length="<|length:medium|>",
-                identity="<|identity:none|>",
+                rating="general",
+                aspect_ratio="tall",
+                length="medium",
+                identity="none",
                 prompt="1girl, cat ears",
             ),
             tokenizer=tokenizer,
@@ -57,11 +70,12 @@ def main():
         ),
     )
 
-    generate(
+    generate_stream(
         model,
         get_generation_config(
             prompt=compose_prompt(
                 prompt="1girl, solo",
+                length="long",
             ),
             tokenizer=tokenizer,
         ),

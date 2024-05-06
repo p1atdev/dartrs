@@ -1,9 +1,9 @@
-use anyhow::{Error as E, Result};
+use anyhow::Result;
 use clap::{Parser, ValueEnum};
 
 use candle_core::{DType, Device};
 
-use hf_hub::{api::sync::Api, Repo, RepoType};
+use hf_hub::api::sync::Api;
 
 use dartrs::generation::{GenerationConfig, TextGeneration};
 use dartrs::models::*;
@@ -48,7 +48,7 @@ struct Args {
     rating: RatingTag,
 
     #[clap(long, value_enum, default_value = "lax")]
-    identity_level: IdentityTag,
+    identity: IdentityTag,
 
     #[clap(long, short, default_value = "")]
     prompt: String,
@@ -114,8 +114,9 @@ fn main() -> Result<()> {
         args.rating,
         args.aspect_ratio,
         args.length,
-        args.identity_level,
+        args.identity,
         &args.prompt,
+        true,
     );
     let mut generation_config = GenerationConfig::new(
         device.clone(),
@@ -126,6 +127,7 @@ fn main() -> Result<()> {
         temperature,
         top_p,
         top_k,
+        Some(Vec::new()),
         seed,
     );
 
