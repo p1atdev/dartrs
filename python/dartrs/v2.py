@@ -4,54 +4,52 @@ from . import dartrs
 
 
 LengthTag = (
-    Literal["<|length:very_short|>"]
-    | Literal["<|length:short|>"]
-    | Literal["<|length:medium|>"]
-    | Literal["<|length:long|>"]
-    | Literal["<|length:very_long|>"]
+    Literal["very_short"]
+    | Literal["short"]
+    | Literal["medium"]
+    | Literal["long"]
+    | Literal["very_long"]
 )
 
 AspectRatioTag = (
-    Literal["<|aspect_ratio:ultra_wide|>"]
-    | Literal["<|aspect_ratio:wide|>"]
-    | Literal["<|aspect_ratio:square|>"]
-    | Literal["<|aspect_ratio:tall|>"]
-    | Literal["<|aspect_ratio:ultra_tall|>"]
+    Literal["ultra_wide"]
+    | Literal["wide"]
+    | Literal["square"]
+    | Literal["tall"]
+    | Literal["ultra_tall"]
 )
 
 RatingTag = (
-    Literal["<|rating:sfw|>"]
-    | Literal["<|rating:general|>"]
-    | Literal["<|rating:sensitive|>"]
-    | Literal["<|rating:nsfw|>"]
-    | Literal["<|rating:questionable|>"]
-    | Literal["<|rating:explicit|>"]
+    Literal["sfw"]
+    | Literal["general"]
+    | Literal["sensitive"]
+    | Literal["nsfw"]
+    | Literal["questionable"]
+    | Literal["explicit"]
 )
 
-IdentityTag = (
-    Literal["<|identity:none|>"]
-    | Literal["<|identity:lax|>"]
-    | Literal["<|identity:strict|>"]
-)
+IdentityTag = Literal["none"] | Literal["lax"] | Literal["strict"]
 
 
 def compose_prompt(
     prompt: str = "",
     copyright: str = "",
     character: str = "",
-    rating: RatingTag = "<|rating:general|>",
-    aspect_ratio: AspectRatioTag = "<|aspect_ratio:tall|>",
-    length: LengthTag = "<|length:medium|>",
-    identity: IdentityTag = "<|identity:none|>",
+    rating: RatingTag = "general",
+    aspect_ratio: AspectRatioTag = "tall",
+    length: LengthTag = "medium",
+    identity: IdentityTag = "none",
+    do_completion: bool = True,
 ):
     return dartrs.compose_prompt_v2(
         copyright=copyright,
         character=character,
-        rating=dartrs.RatingTag(rating),
-        aspect_ratio=dartrs.AspectRatioTag(aspect_ratio),
-        length=dartrs.LengthTag(length),
-        identity_level=dartrs.IdentityTag(identity),
+        rating=dartrs.RatingTag(f"<|rating:{rating}|>"),
+        aspect_ratio=dartrs.AspectRatioTag(f"<|aspect_ratio:{aspect_ratio}|>"),
+        length=dartrs.LengthTag(f"<|length:{length}|>"),
+        identity_level=dartrs.IdentityTag(f"<|identity:{identity}|>"),
         prompt=prompt,
+        do_completion=do_completion,
     )
 
 

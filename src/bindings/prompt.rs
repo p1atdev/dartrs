@@ -14,6 +14,7 @@ pub fn dart_compose_prompt_v2(
     length: DartLengthTag,
     identity_level: DartIdentityTag,
     prompt: &str,
+    do_completion: bool,
 ) -> String {
     let rating = RatingTag::from(rating);
     let aspect_ratio = AspectRatioTag::from(aspect_ratio);
@@ -28,5 +29,6 @@ pub fn dart_compose_prompt_v2(
         length,
         identity_level,
         &prompt,
+        do_completion,
     )
 }

@@ -74,25 +74,25 @@ class DartTokenizer:
         """Decodes tokens and returns a list of tags."""
         ...
 
-class SpecialTag(ABC):
+class Tag(ABC):
     def __init__(self, tag: str) -> None: ...
     def to_tag(self) -> str: ...
 
-class LengthTag(SpecialTag):
+class LengthTag(Tag):
     VeryShort: LengthTag
     Short: LengthTag
     Medium: LengthTag
     Long: LengthTag
     VeryLong: LengthTag
 
-class AspectRatioTag(SpecialTag):
+class AspectRatioTag(Tag):
     UltraWide: AspectRatioTag
     Wide: AspectRatioTag
     Square: AspectRatioTag
     Tall: AspectRatioTag
     UltraTall: AspectRatioTag
 
-class RatingTag(SpecialTag):
+class RatingTag(Tag):
     Sfw: RatingTag
     General: RatingTag
     Sensitive: RatingTag
@@ -100,10 +100,21 @@ class RatingTag(SpecialTag):
     Questionable: RatingTag
     Explicit: RatingTag
 
-class IdentityTag(SpecialTag):
+class IdentityTag(Tag):
     Free: IdentityTag
     Lax: IdentityTag
     Strict: IdentityTag
+
+class SpecialTag(Tag):
+    Bos: SpecialTag
+    Eos: SpecialTag
+    CopyrightStart: SpecialTag
+    CopyrightEnd: SpecialTag
+    CharacterStart: SpecialTag
+    CharacterEnd: SpecialTag
+    GeneralStart: SpecialTag
+    GeneralEnd: SpecialTag
+    InputEnd: SpecialTag
 
 def compose_prompt_v2(
     copyright: str,
@@ -113,4 +124,5 @@ def compose_prompt_v2(
     length: LengthTag,
     identity_level: IdentityTag,
     prompt: str,
+    do_completion: bool,
 ) -> str: ...

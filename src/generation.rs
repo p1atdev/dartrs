@@ -7,8 +7,7 @@ use tokenizers::Tokenizer;
 
 use crate::logits_processor::DartLogitsProcessor;
 use crate::models::{mistral, mixtral};
-use crate::tags::ReservedTag;
-use crate::tags::SpecialTag;
+use crate::tags::{SpecialTag, Tag};
 
 pub struct GenerationCache {
     input_tokens: Vec<u32>,
@@ -125,7 +124,7 @@ pub trait TextGeneration {
 
         let text = tokens
             .into_iter()
-            .filter(|token| !ReservedTag::is_special(token))
+            .filter(|token| !SpecialTag::is_special(token))
             .collect::<Vec<String>>()
             .join(", ");
 

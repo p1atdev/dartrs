@@ -202,10 +202,10 @@ def test_generate_with_ban_token_ids():
 
     prompt = compose_prompt(
         prompt="1girl, solo",
-        length="<|length:long|>",
-        identity="<|identity:none|>",
-        aspect_ratio="<|aspect_ratio:tall|>",
-        rating="<|rating:sfw|>",
+        length="long",
+        identity="none",
+        aspect_ratio="tall",
+        rating="sfw",
     )
 
     ban_tags = "animal ear fluff, animal ears"

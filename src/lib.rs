@@ -25,7 +25,7 @@ fn dartrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DartAspectRatioTag>()?;
     m.add_class::<DartRatingTag>()?;
     m.add_class::<DartIdentityTag>()?;
-    m.add_class::<DartReservedTag>()?;
+    m.add_class::<DartSpecialTag>()?;
     m.add_function(wrap_pyfunction!(dart_compose_prompt_v2, m)?)?;
 
     Ok(())

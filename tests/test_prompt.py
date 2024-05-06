@@ -10,6 +10,7 @@ def test_compose_prompt_v2():
         length=dartrs.LengthTag.Long,
         identity_level=dartrs.IdentityTag.Lax,
         prompt="1girl, cat ears",
+        do_completion=True,
     )
 
     assert prompt is not None
@@ -27,10 +28,11 @@ def test_compose_prompt_v2_wrapper():
         prompt="1girl, cat ears",
         copyright="vocaloid",
         character="hatsune miku",
-        rating="<|rating:sfw|>",
-        aspect_ratio="<|aspect_ratio:tall|>",
-        length="<|length:long|>",
-        identity="<|identity:lax|>",
+        rating="sfw",
+        aspect_ratio="tall",
+        length="long",
+        identity="lax",
+        do_completion=True,
     )
 
     assert prompt is not None
