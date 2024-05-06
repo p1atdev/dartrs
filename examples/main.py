@@ -6,6 +6,7 @@ from dartrs.v2 import (
     V2Model,
 )
 import time
+import os
 
 MODEL_NAME = "p1atdev/dart-v2-mixtral-160m-sft-8"
 
@@ -23,6 +24,18 @@ def generate(model: V2Model, config: GenerationConfig):
     end = time.time()
 
     print(output)
+    print(f"Time taken: {end - start:.2f}s")
+
+
+def generate_stream(model: V2Model, config: GenerationConfig):
+    start = time.time()
+    for tag in model.generate_stream(config):
+        if tag.strip() == "":
+            continue
+        os.write(1, tag.encode("utf-8") + b", ")
+    end = time.time()
+
+    print()
     print(f"Time taken: {end - start:.2f}s")
 
 
@@ -57,11 +70,12 @@ def main():
         ),
     )
 
-    generate(
+    generate_stream(
         model,
         get_generation_config(
             prompt=compose_prompt(
                 prompt="1girl, solo",
+                length="long",
             ),
             tokenizer=tokenizer,
         ),
