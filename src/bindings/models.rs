@@ -170,17 +170,19 @@ impl DartV2Mixtral {
 
 #[pyclass]
 #[derive(Debug, Clone)]
-pub(crate) struct DartTokenizer(Tokenizer);
+pub(crate) struct DartTokenizer {
+    tokenizer: Tokenizer,
+}
 
 impl DartTokenizer {
     fn new(tokenizer: Tokenizer) -> Self {
-        Self(tokenizer)
+        Self { tokenizer }
     }
 }
 
 impl From<DartTokenizer> for Tokenizer {
     fn from(tokenizer: DartTokenizer) -> Self {
-        tokenizer.0
+        tokenizer.tokenizer
     }
 }
 
@@ -227,7 +229,7 @@ impl DartTokenizer {
 
     fn encode(&self, text: String) -> PyResult<Vec<u32>> {
         let encoding = self
-            .0
+            .tokenizer
             .encode(text, false) // add_special_tokens = false
             .map_err(|e| exceptions::PyOSError::new_err(format!("Failed to encode text: {}", e)))?;
         Ok(encoding.get_ids().to_vec())
@@ -241,7 +243,11 @@ impl DartTokenizer {
         let skip_special_tokens = skip_special_tokens.unwrap_or(true);
         let tags = tokens
             .iter()
-            .map(|&token| self.0.decode(&[token], skip_special_tokens).unwrap())
+            .map(|&token| {
+                self.tokenizer
+                    .decode(&[token], skip_special_tokens)
+                    .unwrap()
+            })
             .filter(|tag| !tag.is_empty())
             .collect::<Vec<_>>();
         Ok(tags)
@@ -251,5 +257,13 @@ impl DartTokenizer {
         let tags = self.decode_tags(tokens, skip_special_tokens)?;
         let decoded = tags.join(", ");
         Ok(decoded)
+    }
+
+    fn tokenize(&self, text: String) -> PyResult<Vec<String>> {
+        let tokens = self.tokenizer.encode(text, false).map_err(|e| {
+            exceptions::PyOSError::new_err(format!("Failed to tokenize text: {}", e))
+        })?;
+
+        Ok(tokens.get_tokens().to_vec())
     }
 }
