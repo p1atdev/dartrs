@@ -1,4 +1,4 @@
-from dartrs.dartrs import DartDevice, DartTokenizer, GenerationConfig
+from dartrs.dartrs import DartTokenizer, GenerationConfig
 from dartrs.utils import get_generation_config
 from dartrs.v2 import (
     compose_prompt,
