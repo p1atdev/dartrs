@@ -10,23 +10,23 @@ use crate::models::{mistral, mixtral};
 use crate::tags::{SpecialTag, Tag};
 
 pub struct GenerationCache {
-    input_tokens: Vec<u32>,
-    output_tokens: Vec<u32>,
-    finished: bool,
+    pub input_tokens: Vec<u32>,
+    pub output_tokens: Vec<u32>,
+    pub finished: bool,
 }
 
 impl GenerationCache {
-    fn new(tokens: Option<Vec<u32>>) -> Self {
-        let tokens = match tokens {
-            Some(tokens) => tokens,
-            None => Vec::new(),
-        };
-
+    pub fn new(input_tokens: Vec<u32>) -> Self {
         Self {
-            input_tokens: tokens,
+            input_tokens,
             output_tokens: Vec::new(),
             finished: false,
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.output_tokens.clear();
+        self.finished = false;
     }
 }
 
@@ -151,7 +151,7 @@ pub trait TextGeneration {
 
         let start_gen = std::time::Instant::now();
         // sampling
-        let mut cache = GenerationCache::new(Some(tokens));
+        let mut cache = GenerationCache::new(tokens);
         for _ in 0..config.max_new_tokens {
             let token = self.get_next_token(config, &mut cache)?;
             if let Ok(tag) = self.decode(config, &[token]) {
@@ -241,7 +241,7 @@ impl TextGeneration for mistral::Model {
             .to_vec();
 
         // sampling
-        let mut cache = GenerationCache::new(Some(tokens));
+        let mut cache = GenerationCache::new(tokens);
         for _ in 0..config.max_new_tokens {
             self.get_next_token(config, &mut cache)?;
 
@@ -286,7 +286,7 @@ impl TextGeneration for mixtral::Model {
             .to_vec();
 
         // sampling
-        let mut cache = GenerationCache::new(Some(tokens));
+        let mut cache = GenerationCache::new(tokens);
         for _ in 0..config.max_new_tokens {
             self.get_next_token(config, &mut cache)?;
 

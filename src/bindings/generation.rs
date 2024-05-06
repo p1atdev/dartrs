@@ -1,13 +1,13 @@
 use crate::bindings::models::{DartDevice, DartTokenizer};
-use crate::generation::GenerationConfig;
+use crate::generation::{GenerationCache, GenerationConfig};
 
 use candle_core::Device;
 use pyo3::prelude::*;
 use tokenizers::Tokenizer;
 
 #[pyclass(name = "GenerationConfig")]
-#[derive(Clone)]
-pub struct DartGenerationConfig {
+#[derive(Clone, Debug)]
+pub(crate) struct DartGenerationConfig {
     device: DartDevice,
     tokenizer: DartTokenizer,
     prompt: String,
@@ -64,5 +64,74 @@ impl DartGenerationConfig {
             ban_token_ids,
             seed,
         }
+    }
+
+    fn tokenizer(&self) -> DartTokenizer {
+        self.tokenizer.clone()
+    }
+
+    fn prompt(&self) -> &str {
+        &self.prompt
+    }
+
+    fn max_new_tokens(&self) -> Option<usize> {
+        self.max_new_tokens
+    }
+}
+
+#[pyclass(name = "GenerationCache")]
+#[derive(Clone, Debug)]
+pub(crate) struct DartGenerationCache {
+    pub input_tokens: Vec<u32>,
+    pub output_tokens: Vec<u32>,
+    pub finished: bool,
+}
+
+impl From<DartGenerationCache> for GenerationCache {
+    fn from(cache: DartGenerationCache) -> Self {
+        GenerationCache {
+            input_tokens: cache.input_tokens,
+            output_tokens: cache.output_tokens,
+            finished: cache.finished,
+        }
+    }
+}
+
+impl From<GenerationCache> for DartGenerationCache {
+    fn from(cache: GenerationCache) -> Self {
+        DartGenerationCache {
+            input_tokens: cache.input_tokens,
+            output_tokens: cache.output_tokens,
+            finished: cache.finished,
+        }
+    }
+}
+
+#[pymethods]
+impl DartGenerationCache {
+    #[new]
+    fn new(input_tokens: Vec<u32>) -> Self {
+        Self {
+            input_tokens,
+            output_tokens: Vec::new(),
+            finished: false,
+        }
+    }
+
+    fn clear(&mut self) {
+        self.output_tokens.clear();
+        self.finished = false;
+    }
+
+    fn input_tokens(&self) -> Vec<u32> {
+        self.input_tokens.clone()
+    }
+
+    fn output_tokens(&self) -> Vec<u32> {
+        self.output_tokens.clone()
+    }
+
+    fn finished(&self) -> bool {
+        self.finished
     }
 }

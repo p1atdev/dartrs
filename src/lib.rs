@@ -21,6 +21,7 @@ fn dartrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DartV2Mixtral>()?;
     m.add_class::<DartTokenizer>()?;
     m.add_class::<DartGenerationConfig>()?;
+    m.add_class::<DartGenerationCache>()?;
     m.add_class::<DartLengthTag>()?;
     m.add_class::<DartAspectRatioTag>()?;
     m.add_class::<DartRatingTag>()?;

@@ -25,6 +25,15 @@ class GenerationConfig:
         ban_token_ids: list[int] | None = None,
         seed: int | None = None,
     ) -> None: ...
+    def tokenizer(self) -> DartTokenizer: ...
+    def prompt(self) -> str: ...
+    def max_new_tokens(self) -> int: ...
+
+class GenerationCache:
+    def __init__(self, input_tokens: list[int]) -> None: ...
+    def input_tokens(self) -> list[int]: ...
+    def output_tokens(self) -> list[int]: ...
+    def finished(self) -> bool: ...
 
 class DartV2Mistral:
     def __init__(
@@ -34,11 +43,16 @@ class DartV2Mistral:
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
         auth_token: str | None = None,
-    ) -> None:
-        raise NotImplementedError
-
+    ) -> None: ...
     def generate(self, config: GenerationConfig) -> str:
         raise NotImplementedError
+
+    def get_next_token(
+        self,
+        config: GenerationConfig,
+        cache: GenerationCache,
+    ) -> tuple[int, GenerationCache]: ...
+    def _clear_kv_cache(self) -> None: ...
 
 class DartV2Mixtral:
     def __init__(
@@ -48,11 +62,16 @@ class DartV2Mixtral:
         dtype: DartDType = DartDType.FP32,
         device: DartDevice = DartDevice.Cpu(),
         auth_token: str | None = None,
-    ) -> None:
-        raise NotImplementedError
-
+    ) -> None: ...
     def generate(self, config: GenerationConfig) -> str:
         raise NotImplementedError
+
+    def get_next_token(
+        self,
+        config: GenerationConfig,
+        cache: GenerationCache,
+    ) -> tuple[int, GenerationCache]: ...
+    def _clear_kv_cache(self) -> None: ...
 
 class DartTokenizer:
     @staticmethod

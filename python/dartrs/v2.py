@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Generator
 
 from . import dartrs
 
@@ -63,7 +63,39 @@ class V2Model:
         self.model = model
 
     def generate(self, config: dartrs.GenerationConfig) -> str:
+        """Generates tags."""
         return self.model.generate(config)
+
+    def _get_next_token(
+        self, config: dartrs.GenerationConfig, cache: dartrs.GenerationCache
+    ) -> tuple[int, dartrs.GenerationCache]:
+        """Generates the next token."""
+        return self.model.get_next_token(config, cache)
+
+    def generate_stream(self, config: dartrs.GenerationConfig) -> Generator[
+        str,  # tag
+        None,
+        str,  # final decoded text
+    ]:
+        """Generates tags and returns the final decoded text."""
+
+        tokens = config.tokenizer().encode(config.prompt())
+        cache = dartrs.GenerationCache(tokens)
+
+        for _ in range(0, config.max_new_tokens()):
+            token, cache = self._get_next_token(config, cache)
+            tag = config.tokenizer().decode([token], skip_special_tokens=True)
+            yield tag
+
+            if cache.finished():
+                break
+
+        self.model._clear_kv_cache()  # clear kv cache
+
+        decoded = config.tokenizer().decode(
+            cache.output_tokens(), skip_special_tokens=True
+        )
+        return decoded
 
 
 class MixtralModel(V2Model):
