@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::bindings::generation::{DartGenerationCache, DartGenerationConfig};
 use crate::generation::{GenerationCache, GenerationConfig, TextGeneration};
 use crate::models::{
@@ -316,5 +318,19 @@ impl DartTokenizer {
         })?;
 
         Ok(tokens.get_tokens().to_vec())
+    }
+
+    fn get_vocab(&self, with_added_tokens: Option<bool>) -> HashMap<String, u32> {
+        let with_added_tokens = with_added_tokens.unwrap_or(true);
+        self.tokenizer.get_vocab(with_added_tokens)
+    }
+
+    fn get_added_tokens(&self) -> Vec<String> {
+        let added_tokens = self.tokenizer.get_added_tokens_decoder();
+        added_tokens
+            .values()
+            .cloned()
+            .map(|token| token.content.to_string())
+            .collect()
     }
 }
