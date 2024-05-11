@@ -8,8 +8,8 @@ from random import randint
 
 
 def prepare_models():
-    model = MixtralModel.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-8")
-    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-mixtral-160m-sft-8")
+    model = MixtralModel.from_pretrained("p1atdev/dart-v2-moe-sft")
+    tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-moe-sft")
 
     return model, tokenizer
 

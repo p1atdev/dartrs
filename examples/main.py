@@ -8,7 +8,7 @@ from dartrs.v2 import (
 import time
 import os
 
-MODEL_NAME = "p1atdev/dart-v2-mixtral-160m-sft-8"
+MODEL_NAME = "p1atdev/dart-v2-moe-sft"
 
 
 def prepare_models():

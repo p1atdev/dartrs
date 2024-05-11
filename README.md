@@ -20,7 +20,7 @@ from dartrs.v2 import (
 import time
 import os
 
-MODEL_NAME = "" # TODO
+MODEL_NAME = "p1atdev/dart-v2-moe-sft"
 
 model = MixtralModel.from_pretrained(MODEL_NAME)
 tokenizer = DartTokenizer.from_pretrained(MODEL_NAME)
