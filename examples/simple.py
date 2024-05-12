@@ -8,7 +8,7 @@ import time
 
 MODEL_NAME = "p1atdev/dart-v2-moe-sft"
 
-model = MixtralModel.from_pretrained(MODEL_NAME)
+model = MixtralModel.from_pretrained(MODEL_NAME, dtype="fp16")
 tokenizer = DartTokenizer.from_pretrained(MODEL_NAME)
 
 config = get_generation_config(

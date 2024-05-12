@@ -3,12 +3,12 @@ from dartrs.v2 import (
     MixtralModel,
     compose_prompt,
 )
-from dartrs.utils import get_generation_config
+from dartrs.utils import get_generation_config, DType, Device
 from random import randint
 
 
-def prepare_models():
-    model = MixtralModel.from_pretrained("p1atdev/dart-v2-moe-sft")
+def prepare_models(dtype: DType = "fp32", device: Device = "cpu"):
+    model = MixtralModel.from_pretrained("p1atdev/dart-v2-moe-sft", dtype=dtype)
     tokenizer = DartTokenizer.from_pretrained("p1atdev/dart-v2-moe-sft")
 
     return model, tokenizer
@@ -16,6 +16,38 @@ def prepare_models():
 
 def test_generate():
     model, tokenizer = prepare_models()
+
+    prompt = compose_prompt(
+        prompt="1girl, cat ears",
+    )
+    config = get_generation_config(
+        prompt=prompt,
+        tokenizer=tokenizer,
+        seed=42,
+    )
+
+    output = model.generate(config)
+    assert output is not None
+
+
+def test_generate_fp16_cpu():
+    model, tokenizer = prepare_models(dtype="fp16", device="cpu")
+
+    prompt = compose_prompt(
+        prompt="1girl, cat ears",
+    )
+    config = get_generation_config(
+        prompt=prompt,
+        tokenizer=tokenizer,
+        seed=42,
+    )
+
+    output = model.generate(config)
+    assert output is not None
+
+
+def test_generate_fp16_cuda():
+    model, tokenizer = prepare_models(dtype="fp16", device="cuda")
 
     prompt = compose_prompt(
         prompt="1girl, cat ears",

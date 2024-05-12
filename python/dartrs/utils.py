@@ -1,4 +1,9 @@
+from typing import Literal
+
 from . import dartrs
+
+DType = Literal["fp16", "fp32"]
+Device = Literal["cpu", "cuda"]
 
 
 def get_generation_config(

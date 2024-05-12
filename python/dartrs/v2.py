@@ -1,34 +1,15 @@
 from typing import Literal, Generator
 
 from . import dartrs
+from . import utils
 
+LengthTag = Literal["very_short", "short", "medium", "long", "very_long"]
 
-LengthTag = (
-    Literal["very_short"]
-    | Literal["short"]
-    | Literal["medium"]
-    | Literal["long"]
-    | Literal["very_long"]
-)
+AspectRatioTag = Literal["ultra_wide", "wide", "square", "tall", "ultra_tall"]
 
-AspectRatioTag = (
-    Literal["ultra_wide"]
-    | Literal["wide"]
-    | Literal["square"]
-    | Literal["tall"]
-    | Literal["ultra_tall"]
-)
+RatingTag = Literal["sfw", "general", "sensitive", "nsfw", "questionable", "explicit"]
 
-RatingTag = (
-    Literal["sfw"]
-    | Literal["general"]
-    | Literal["sensitive"]
-    | Literal["nsfw"]
-    | Literal["questionable"]
-    | Literal["explicit"]
-)
-
-IdentityTag = Literal["none"] | Literal["lax"] | Literal["strict"]
+IdentityTag = Literal["none", "lax", "strict"]
 
 
 def compose_prompt(
@@ -104,11 +85,19 @@ class MixtralModel(V2Model):
         cls,
         hub_name: str,
         revision: str | None = None,
-        dtype: dartrs.DartDType = dartrs.DartDType.FP32,
-        device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
+        dtype: utils.DType = "fp32",
+        device: utils.Device = "cpu",
         auth_token: str | None = None,
     ) -> V2Model:
-        return cls(dartrs.DartV2Mixtral(hub_name, revision, dtype, device, auth_token))
+        return cls(
+            dartrs.DartV2Mixtral(
+                hub_name,
+                revision,
+                dartrs.DartDType(dtype),
+                dartrs.DartDevice(device),
+                auth_token,
+            )
+        )
 
 
 class MistralModel(V2Model):
@@ -117,8 +106,16 @@ class MistralModel(V2Model):
         cls,
         hub_name: str,
         revision: str | None = None,
-        dtype: dartrs.DartDType = dartrs.DartDType.FP32,
-        device: dartrs.DartDevice = dartrs.DartDevice.Cpu(),
+        dtype: utils.DType = "fp32",
+        device: utils.Device = "cpu",
         auth_token: str | None = None,
     ) -> V2Model:
-        return cls(dartrs.DartV2Mistral(hub_name, revision, dtype, device, auth_token))
+        return cls(
+            dartrs.DartV2Mistral(
+                hub_name,
+                revision,
+                dartrs.DartDType(dtype),
+                dartrs.DartDevice(device),
+                auth_token,
+            )
+        )

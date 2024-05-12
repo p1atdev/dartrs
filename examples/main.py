@@ -12,7 +12,7 @@ MODEL_NAME = "p1atdev/dart-v2-moe-sft"
 
 
 def prepare_models():
-    model = MixtralModel.from_pretrained(MODEL_NAME, dtype=DartDType.FP16)
+    model = MixtralModel.from_pretrained(MODEL_NAME, dtype="fp16")
     tokenizer = DartTokenizer.from_pretrained(MODEL_NAME)
 
     return model, tokenizer
