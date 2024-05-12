@@ -10,7 +10,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-version = "0.1.4"
+version = "0.1.5"
 description = ""
 authors = [{ name = "Plat", email = "contact@p1at.dev" }]
 dependencies = []

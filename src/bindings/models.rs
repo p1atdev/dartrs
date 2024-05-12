@@ -33,6 +33,19 @@ impl From<DartDType> for DType {
     }
 }
 
+#[pymethods]
+impl DartDType {
+    #[new]
+    fn from(dtype: String) -> PyResult<Self> {
+        match dtype.as_str() {
+            "bf16" => Ok(DartDType::BF16),
+            "fp16" => Ok(DartDType::FP16),
+            "fp32" => Ok(DartDType::FP32),
+            _ => Err(exceptions::PyValueError::new_err("invalid dtype")),
+        }
+    }
+}
+
 #[pyclass]
 #[derive(Debug, Clone)]
 pub(crate) enum DartDevice {
@@ -52,12 +65,20 @@ impl From<DartDevice> for Device {
     }
 }
 
-// #[pyclass]
-// #[derive(Debug, Clone)]
-// pub(crate) struct NextToken {
-//     pub token: u32,
-//     pub cache: DartGenerationCache,
-// }
+#[pymethods]
+impl DartDevice {
+    #[new]
+    fn new(device: String) -> PyResult<Self> {
+        if device.starts_with("cuda") {
+            let id = device[4..].parse().unwrap_or(0);
+            Ok(DartDevice::Cuda { id })
+        } else if device == "cpu" {
+            Ok(DartDevice::Cpu {})
+        } else {
+            Err(exceptions::PyValueError::new_err("invalid device"))
+        }
+    }
+}
 
 macro_rules! generate {
     ($self:ident, $config:ident) => {
@@ -104,9 +125,9 @@ impl DartV2Mistral {
             }
         };
         let dtype = dtype.unwrap_or(DartDType::FP32);
+        let dtype = DType::from(dtype);
         let device = device.unwrap_or(DartDevice::Cpu {});
         let device = Device::from(device);
-        let dtype = DType::from(dtype);
 
         let repo = ModelRepositoy::new(hub_name.clone(), api.clone(), revision);
 

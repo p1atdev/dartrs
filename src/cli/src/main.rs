@@ -20,6 +20,26 @@ enum ModelType {
     Mixtral,
 }
 
+#[derive(Debug, Clone, ValueEnum)]
+enum DTypeArg {
+    #[clap(name = "fp32")]
+    Fp32,
+    #[clap(name = "fp16")]
+    Fp16,
+    #[clap(name = "bf16")]
+    Bf16,
+}
+
+impl From<DTypeArg> for DType {
+    fn from(dtype: DTypeArg) -> Self {
+        match dtype {
+            DTypeArg::Fp32 => DType::F32,
+            DTypeArg::Fp16 => DType::F16,
+            DTypeArg::Bf16 => DType::BF16,
+        }
+    }
+}
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -61,11 +81,19 @@ struct Args {
 
     #[clap(long)]
     use_cuda: bool,
+
+    #[clap(long, default_value = "fp32")]
+    dtype: DTypeArg,
 }
 
 macro_rules! run {
     ($model:ident, $generation_config:ident) => {
-        $model.run(&mut $generation_config)?; // generate text
+        match $model.run(&mut $generation_config) {
+            Ok(output) => {}
+            Err(e) => {
+                eprintln!("Error: {:?}", e);
+            }
+        }
     };
 }
 
@@ -83,6 +111,7 @@ fn main() -> Result<()> {
     let model_name = args.model_name;
     let revision = args.revision;
     let max_new_tokens = args.max_new_tokens;
+    let dtype = DType::from(args.dtype);
 
     let api = Api::new()?;
 
@@ -90,11 +119,6 @@ fn main() -> Result<()> {
         true => Device::cuda_if_available(0),
         false => Ok(Device::Cpu),
     }?;
-    let dtype = if device.is_cuda() {
-        DType::BF16
-    } else {
-        DType::F32
-    };
 
     let start = std::time::Instant::now();
 

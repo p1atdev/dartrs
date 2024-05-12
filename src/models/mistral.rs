@@ -363,4 +363,12 @@ impl Model {
             layer.clear_kv_cache()
         }
     }
+
+    pub fn device(&self) -> &Device {
+        &self.device
+    }
+
+    pub fn dtype(&self) -> DType {
+        self.dtype
+    }
 }
