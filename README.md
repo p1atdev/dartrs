@@ -22,7 +22,7 @@ import os
 
 MODEL_NAME = "p1atdev/dart-v2-moe-sft"
 
-model = MixtralModel.from_pretrained(MODEL_NAME)
+model = MixtralModel.from_pretrained(MODEL_NAME, dtype="fp16")
 tokenizer = DartTokenizer.from_pretrained(MODEL_NAME)
 
 config = get_generation_config(
@@ -46,6 +46,6 @@ end = time.time()
 print(output)
 print(f"Time taken: {end - start:.2f}s")
 # Output:
-# cowboy shot, detached sleeves, empty eyes, green eyes, green hair, green necktie, hair in own mouth, hair ornament, letterboxed, light frown, long hair, long sleeves, looking to the side, necktie, parted lips, shirt, sleeveless, sleeveless shirt, twintails, wing collar
-# Time taken: 0.26s
+# cowboy shot, detached sleeves, expressionless, from side, hair ornament, halftone, hairclip, holding, limited palette, long hair, looking at viewer, miniskirt, necktie, pleated skirt, shirt, simple background, skirt, sleeveless, sleeveless shirt, straight-on, thighhighs, twintails, very long hair, zettai ryouiki
+# Time taken: 0.22s
 ```
