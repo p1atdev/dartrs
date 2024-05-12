@@ -1,4 +1,4 @@
-from dartrs.dartrs import DartTokenizer, GenerationConfig
+from dartrs.dartrs import DartTokenizer, GenerationConfig, DartDType
 from dartrs.utils import get_generation_config
 from dartrs.v2 import (
     compose_prompt,
@@ -12,7 +12,7 @@ MODEL_NAME = "p1atdev/dart-v2-moe-sft"
 
 
 def prepare_models():
-    model = MixtralModel.from_pretrained(MODEL_NAME)
+    model = MixtralModel.from_pretrained(MODEL_NAME, dtype=DartDType.FP16)
     tokenizer = DartTokenizer.from_pretrained(MODEL_NAME)
 
     return model, tokenizer

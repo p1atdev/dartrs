@@ -194,6 +194,7 @@ macro_rules! get_next_token {
         let start_pos = tokens.len().saturating_sub(context_size);
         let context = &tokens[start_pos..];
         let input = Tensor::new(context, &$config.device)?.unsqueeze(0)?;
+        let input = input.to_device($self.device())?;
         let logits = $self.forward(&input, start_pos)?;
         let logits = logits.squeeze(0)?.squeeze(0)?.to_dtype(DType::F32)?;
 
